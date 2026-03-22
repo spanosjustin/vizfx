@@ -1033,9 +1033,9 @@ function renderScreenChipsForPane(version, container, parsed, selectedFileName) 
     const codeSelectedKey = resolveFormulaKeyForCodePaneScroll(version);
     const selectedBtnDisabled = !codeSelectedKey;
     const relatedFocusOn = state.codeViewRelatedOnlyFocus[version];
-    html += `<button type="button" class="graph-subtree-focus-btn" data-version="${version}" data-action="code-related-only"${
+    html += `<button type="button" class="graph-subtree-focus-btn${
       relatedFocusOn ? " is-active" : ""
-    } aria-label="${
+    }" data-version="${version}" data-action="code-related-only" aria-label="${
       relatedFocusOn ? "Show all formulas in scope" : "Show only formulas connected to the selection"
     }" title="${
       relatedFocusOn
