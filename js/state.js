@@ -58,12 +58,31 @@ export const state = {
     dependencyGraphScreenFilterFileB: null,
 
     /**
-     * Dependency graph: when true, fade nodes/edges outside the selected node and its
-     * downstream reachable set (following edges from → to) for that pane.
+     * Dependency graph: when true, fade nodes/edges outside the selected node’s subtree-focus
+     * neighborhood (see `dependencyGraphSubtreeFocusDirection` and `dependencyGraphSubtreeFocusDepth`).
      */
     dependencyGraphSubtreeFocus: {
       A: false,
       B: false,
+    },
+
+    /**
+     * Dependency graph subtree focus: hop / step limit from the selection.
+     * Undirected mode: undirected hops; upstream/downstream: directed steps along edges (arrow from→to).
+     * `null` or `Infinity` = unlimited reach in that mode (WCC for undirected; full forward/back closure for directed).
+     */
+    dependencyGraphSubtreeFocusDepth: {
+      A: null,
+      B: null,
+    },
+
+    /**
+     * Subtree focus edge direction: `undirected` (same as before), `upstream` (dependents — walk to→from),
+     * `downstream` (dependencies — walk from→to). Arrows follow exported graph edges (dependent → dependency).
+     */
+    dependencyGraphSubtreeFocusDirection: {
+      A: "undirected",
+      B: "undirected",
     },
 
     /**

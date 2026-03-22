@@ -171,10 +171,7 @@ export function renderGraph(
   );
 }
 
-/** All node ids in the same weakly connected component as `rootId` (edges treated as undirected). */
-function computeWeaklyConnectedNodeIdsFromEdgeElements(edgeEls, rootId) {
-  if (!rootId) return new Set();
-
+function buildUndirectedAdjacencyFromEdgeElements(edgeEls) {
   const adj = new Map();
   for (const edgeEl of edgeEls) {
     const from = edgeEl.dataset.fromId;
@@ -187,31 +184,222 @@ function computeWeaklyConnectedNodeIdsFromEdgeElements(edgeEls, rootId) {
     if (!b) adj.set(to, (b = []));
     b.push(from);
   }
-
-  const out = new Set([rootId]);
-  const stack = [rootId];
-  while (stack.length) {
-    const n = stack.pop();
-    for (const t of adj.get(n) || []) {
-      if (!out.has(t)) {
-        out.add(t);
-        stack.push(t);
-      }
-    }
-  }
-  return out;
+  return adj;
 }
 
 /**
- * Weakly connected component of `rootNodeId` over edges visible in the dependency graph
- * (same filters + optional screen scope as `renderGraph`). Returns formula `key` values for
- * formula nodes in that component.
+ * Nodes reachable from `rootId` along undirected edges. If `maxHops` is `null` or `Infinity`,
+ * returns the full weakly connected component; otherwise nodes within `maxHops` graph hops
+ * (selected node is hop 0).
+ * @param {Map<string, string[]>} adj
+ * @param {string} rootId
+ * @param {number | null | undefined} maxHops
+ */
+function traverseWeaklyConnectedUndirected(adj, rootId, maxHops) {
+  if (!rootId) return new Set();
+
+  const unlimited =
+    maxHops == null ||
+    maxHops === Infinity ||
+    (typeof maxHops === "number" && !Number.isFinite(maxHops));
+
+  if (unlimited) {
+    const out = new Set([rootId]);
+    const stack = [rootId];
+    while (stack.length) {
+      const n = stack.pop();
+      for (const t of adj.get(n) || []) {
+        if (!out.has(t)) {
+          out.add(t);
+          stack.push(t);
+        }
+      }
+    }
+    return out;
+  }
+
+  const mh = Math.max(0, Math.floor(Number(maxHops)));
+  if (Number.isNaN(mh)) {
+    return traverseWeaklyConnectedUndirected(adj, rootId, null);
+  }
+
+  const dist = new Map([[rootId, 0]]);
+  const q = [rootId];
+  let head = 0;
+  while (head < q.length) {
+    const n = q[head++];
+    const d = dist.get(n);
+    if (d >= mh) continue;
+    for (const t of adj.get(n) || []) {
+      if (!dist.has(t)) {
+        dist.set(t, d + 1);
+        q.push(t);
+      }
+    }
+  }
+  return new Set(dist.keys());
+}
+
+/** Node ids within `maxHops` undirected hops of `rootId` in the rendered edge list (or full component if unlimited). */
+function computeWeaklyConnectedNodeIdsFromEdgeElements(edgeEls, rootId, maxHops = null) {
+  if (!rootId) return new Set();
+  const adj = buildUndirectedAdjacencyFromEdgeElements(edgeEls);
+  return traverseWeaklyConnectedUndirected(adj, rootId, maxHops);
+}
+
+function buildForwardAdjFromEdgeElements(edgeEls) {
+  const adj = new Map();
+  for (const el of edgeEls) {
+    const f = el.dataset.fromId;
+    const t = el.dataset.toId;
+    if (!f || !t) continue;
+    let n = adj.get(f);
+    if (!n) adj.set(f, (n = []));
+    n.push(t);
+  }
+  return adj;
+}
+
+/** Predecessors of `u`: nodes `v` with a forward edge v→u (walk “upstream” / to dependents). */
+function buildReversePredAdjFromEdgeElements(edgeEls) {
+  const adj = new Map();
+  for (const el of edgeEls) {
+    const f = el.dataset.fromId;
+    const t = el.dataset.toId;
+    if (!f || !t) continue;
+    let n = adj.get(t);
+    if (!n) adj.set(t, (n = []));
+    n.push(f);
+  }
+  return adj;
+}
+
+/**
+ * Shortest-path distances from `rootId` in a directed graph given by `adj` (out-neighbors).
+ * `maxHops` null/Infinity: full reachable set; otherwise nodes within that many directed steps (root = 0).
+ */
+function directedBfsDistance(adj, rootId, maxHops) {
+  if (!rootId) return new Map();
+
+  const unlimited =
+    maxHops == null ||
+    maxHops === Infinity ||
+    (typeof maxHops === "number" && !Number.isFinite(maxHops));
+
+  const dist = new Map([[rootId, 0]]);
+  const q = [rootId];
+  let head = 0;
+
+  if (unlimited) {
+    while (head < q.length) {
+      const u = q[head++];
+      const d = dist.get(u);
+      for (const v of adj.get(u) || []) {
+        if (!dist.has(v)) {
+          dist.set(v, d + 1);
+          q.push(v);
+        }
+      }
+    }
+    return dist;
+  }
+
+  const maxD = Math.max(0, Math.floor(Number(maxHops)));
+  if (Number.isNaN(maxD)) {
+    return directedBfsDistance(adj, rootId, null);
+  }
+
+  while (head < q.length) {
+    const u = q[head++];
+    const d = dist.get(u);
+    if (d >= maxD) continue;
+    for (const v of adj.get(u) || []) {
+      if (!dist.has(v)) {
+        dist.set(v, d + 1);
+        q.push(v);
+      }
+    }
+  }
+  return dist;
+}
+
+function buildForwardAdjFromParsedEdges(edges) {
+  const adj = new Map();
+  for (const e of edges) {
+    const from = e.from;
+    const to = e.to;
+    if (!from || !to) continue;
+    let n = adj.get(from);
+    if (!n) adj.set(from, (n = []));
+    n.push(to);
+  }
+  return adj;
+}
+
+function buildReversePredAdjFromParsedEdges(edges) {
+  const adj = new Map();
+  for (const e of edges) {
+    const from = e.from;
+    const to = e.to;
+    if (!from || !to) continue;
+    let n = adj.get(to);
+    if (!n) adj.set(to, (n = []));
+    n.push(from);
+  }
+  return adj;
+}
+
+/**
+ * Visible node ids for subtree focus (parsed edges), aligned with SVG focus rules.
+ * @param {"undirected" | "upstream" | "downstream"} direction
+ */
+function computeSubtreeVisibleNodeIdsFromParsedEdges(
+  visibleEdges,
+  rootId,
+  maxHops,
+  direction
+) {
+  if (!rootId) return new Set();
+  if (direction === "downstream") {
+    const adj = buildForwardAdjFromParsedEdges(visibleEdges);
+    const dist = directedBfsDistance(adj, rootId, maxHops);
+    return new Set(dist.keys());
+  }
+  if (direction === "upstream") {
+    const adj = buildReversePredAdjFromParsedEdges(visibleEdges);
+    const dist = directedBfsDistance(adj, rootId, maxHops);
+    return new Set(dist.keys());
+  }
+  return computeWeaklyConnectedFromParsedEdges(visibleEdges, rootId, maxHops);
+}
+
+/** Directed modes: highlight only edges on a shortest-path layer (both endpoints may be visible without qualifying). */
+function directedDownstreamLayerEdge(fromId, toId, forwardDist) {
+  const df = forwardDist.get(fromId);
+  const dt = forwardDist.get(toId);
+  if (df == null || dt == null) return false;
+  return dt === df + 1;
+}
+
+function directedUpstreamLayerEdge(fromId, toId, reverseDist) {
+  const df = reverseDist.get(fromId);
+  const dt = reverseDist.get(toId);
+  if (df == null || dt == null) return false;
+  return df === dt + 1;
+}
+
+/**
+ * Formula keys for formula nodes in the subtree-focus-visible set (same rules as dependency graph focus):
+ * `undirected` + optional hop limit, or directed upstream/downstream with the same step limit.
+ * When `maxHops` is `null` or `Infinity`, reach is unlimited in that mode.
  */
 export function formulaKeysWeaklyConnectedInVisibleGraph(
   parsed,
   filters,
   screenFileName,
-  rootNodeId
+  rootNodeId,
+  maxHops = null,
+  direction = "undirected"
 ) {
   if (!parsed?.nodes?.length || !rootNodeId) return new Set();
 
@@ -236,7 +424,12 @@ export function formulaKeysWeaklyConnectedInVisibleGraph(
     return fk ? new Set([fk]) : new Set();
   }
 
-  const connectedIds = computeWeaklyConnectedFromParsedEdges(visibleEdges, rootNodeId);
+  const connectedIds = computeSubtreeVisibleNodeIdsFromParsedEdges(
+    visibleEdges,
+    rootNodeId,
+    maxHops,
+    direction || "undirected"
+  );
 
   const keys = new Set();
   for (const node of visibleNodes) {
@@ -251,9 +444,7 @@ export function formulaKeysWeaklyConnectedInVisibleGraph(
   return keys;
 }
 
-function computeWeaklyConnectedFromParsedEdges(edges, rootId) {
-  if (!rootId) return new Set();
-
+function buildUndirectedAdjacencyFromParsedEdges(edges) {
   const adj = new Map();
   for (const e of edges) {
     const from = e.from;
@@ -266,19 +457,13 @@ function computeWeaklyConnectedFromParsedEdges(edges, rootId) {
     if (!b) adj.set(to, (b = []));
     b.push(from);
   }
+  return adj;
+}
 
-  const out = new Set([rootId]);
-  const stack = [rootId];
-  while (stack.length) {
-    const n = stack.pop();
-    for (const t of adj.get(n) || []) {
-      if (!out.has(t)) {
-        out.add(t);
-        stack.push(t);
-      }
-    }
-  }
-  return out;
+function computeWeaklyConnectedFromParsedEdges(edges, rootId, maxHops = null) {
+  if (!rootId) return new Set();
+  const adj = buildUndirectedAdjacencyFromParsedEdges(edges);
+  return traverseWeaklyConnectedUndirected(adj, rootId, maxHops);
 }
 
 function formulaKeyForFormulaNodeId(parsed, rootNodeId) {
@@ -537,6 +722,7 @@ function drawEdge(
     }
   }
 
+  // Dependency direction matches exported graph JSON: arrow is from → to (source depends on / relates to target).
   edgeGroup.dataset.fromId = fromId;
   edgeGroup.dataset.toId = toId;
 
@@ -697,9 +883,33 @@ function applyGraphFocusClasses(
   const subtreeFocusActive = Boolean(
     subtreeFocus && selectedId && !hoveredId
   );
-  const connectedIds = subtreeFocusActive
-    ? computeWeaklyConnectedNodeIdsFromEdgeElements(edges, selectedId)
-    : null;
+  const subtreeDepth = focusOptions.subtreeFocusDepth;
+  const subtreeDir = focusOptions.subtreeFocusDirection || "undirected";
+
+  /** @type {Set<string> | null} */
+  let connectedIds = null;
+  /** @type {Map<string, number> | null} */
+  let forwardDistMap = null;
+  /** @type {Map<string, number> | null} */
+  let reverseDistMap = null;
+
+  if (subtreeFocusActive) {
+    if (subtreeDir === "downstream") {
+      const fa = buildForwardAdjFromEdgeElements(edges);
+      forwardDistMap = directedBfsDistance(fa, selectedId, subtreeDepth);
+      connectedIds = new Set(forwardDistMap.keys());
+    } else if (subtreeDir === "upstream") {
+      const ra = buildReversePredAdjFromEdgeElements(edges);
+      reverseDistMap = directedBfsDistance(ra, selectedId, subtreeDepth);
+      connectedIds = new Set(reverseDistMap.keys());
+    } else {
+      connectedIds = computeWeaklyConnectedNodeIdsFromEdgeElements(
+        edges,
+        selectedId,
+        subtreeDepth
+      );
+    }
+  }
 
   const hoveredIncidentNodes = hoveredId
     ? incidentNodesByNodeId.get(hoveredId)
@@ -726,7 +936,7 @@ function applyGraphFocusClasses(
       // Node dimming behavior:
       // - When only selected: keep ONLY the selected node visible (matches
       //   existing click-selection behavior), unless subtree focus is on — then
-      //   hide everything outside the weakly connected component of the selection.
+      //   hide everything outside the subtree-focus visible set for the selection.
       // - When hovering (with or without selection): keep the hovered node and
       //   its incident neighborhood visible, plus the selected node styling.
       if (hoveredId) {
@@ -757,10 +967,27 @@ function applyGraphFocusClasses(
       Boolean(hoveredEdges && hoveredEdges.has(edgeEl)) ||
       (hoveredId && (fromId === hoveredId || toId === hoveredId));
 
-    const edgeInsideConnected =
-      connectedIds &&
-      connectedIds.has(fromId) &&
-      connectedIds.has(toId);
+    // Undirected: both endpoints in the hop/component set. Directed: only edges on a BFS shortest-path
+    // layer (two endpoints can both be visible — e.g. sibling dependents — without the edge between them).
+    let edgeInsideConnected = false;
+    if (connectedIds) {
+      if (subtreeDir === "undirected") {
+        edgeInsideConnected =
+          connectedIds.has(fromId) && connectedIds.has(toId);
+      } else if (subtreeDir === "downstream" && forwardDistMap) {
+        edgeInsideConnected = directedDownstreamLayerEdge(
+          fromId,
+          toId,
+          forwardDistMap
+        );
+      } else if (subtreeDir === "upstream" && reverseDistMap) {
+        edgeInsideConnected = directedUpstreamLayerEdge(
+          fromId,
+          toId,
+          reverseDistMap
+        );
+      }
+    }
 
     edgeEl.classList.remove(
       "is-dimmed",

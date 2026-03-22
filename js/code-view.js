@@ -1,6 +1,65 @@
 import { escapeHtml, formulaKey, COPY_ICON_SVG } from "./utils.js";
 import { emptyStateMessageForCodeView } from "./logic.js";
 
+/** Same glyph as dependency graph subtree-focus eye (`app.js`). */
+const CODE_RELATED_ONLY_EYE_SVG = `<svg class="graph-subtree-focus-btn__icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+  <path fill="currentColor" d="M8 4C4.82 4 2.14 6.02 1.2 8c.94 1.98 3.62 4 6.8 4s5.86-2.02 6.8-4C13.86 6.02 11.18 4 8 4zm0 6.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"></path>
+</svg>`;
+
+/**
+ * @param {"A" | "B"} version
+ * @param {{
+ *   relatedFocusOn: boolean,
+ *   direction: string,
+ *   depth: number | null,
+ *   selectedBtnDisabled: boolean,
+ *   depthDirDisabled: boolean,
+ * }} opts
+ */
+function buildCodeFocusToolbarHtml(version, opts) {
+  const {
+    relatedFocusOn,
+    direction,
+    depth,
+    selectedBtnDisabled,
+    depthDirDisabled,
+  } = opts;
+  const dirVal = direction || "undirected";
+  const dirOpt = (v) => (dirVal === v ? " selected" : "");
+  const depthVal = depth;
+  const depthFull =
+    depthVal == null ||
+    depthVal === Infinity ||
+    ![1, 2, 3].includes(depthVal);
+  const depthOpt = (n) =>
+    !depthFull && depthVal === n ? " selected" : "";
+  return `
+    <div class="code-view-ide-toolbar-right" role="group" aria-label="Connected formulas filter">
+      <button type="button" class="graph-subtree-focus-btn${
+        relatedFocusOn ? " is-active" : ""
+      }" data-version="${version}" data-action="code-related-only" aria-label="${
+    relatedFocusOn ? "Show all formulas in scope" : "Show only formulas connected to the selection"
+  }" title="${
+    relatedFocusOn
+      ? "Show all formulas in scope"
+      : "Hide formulas that are not in the same connected group as the selection (same rules as dependency graph focus)"
+  }" aria-pressed="${relatedFocusOn}"${
+    selectedBtnDisabled ? " disabled aria-disabled=\"true\"" : ""
+  }>${CODE_RELATED_ONLY_EYE_SVG}</button>
+      <select class="graph-subtree-focus-direction-select" data-version="${version}" aria-label="Connected filter direction" title="How to walk edges (arrow is from→to in the export). Downstream = dependencies of the selection; Upstream = dependents."${depthDirDisabled ? " disabled aria-disabled=\"true\"" : ""}>
+        <option value="undirected"${dirOpt("undirected")}>Undirected</option>
+        <option value="upstream"${dirOpt("upstream")}>Upstream (dependents)</option>
+        <option value="downstream"${dirOpt("downstream")}>Downstream (dependencies)</option>
+      </select>
+      <select class="graph-subtree-focus-depth-select" data-version="${version}" aria-label="Connected filter depth" title="Limit distance from the selection (Full = unlimited). Undirected: hop count. Upstream / Downstream: directed steps along edges."${depthDirDisabled ? " disabled aria-disabled=\"true\"" : ""}>
+        <option value=""${depthFull ? " selected" : ""}>Full</option>
+        <option value="1"${depthOpt(1)}>1 hop</option>
+        <option value="2"${depthOpt(2)}>2 hops</option>
+        <option value="3"${depthOpt(3)}>3 hops</option>
+      </select>
+    </div>`;
+}
+
 function renderCodeEmptyState(ctx, options) {
   const isMissing = ctx.reason === "missingInVersionA" || ctx.reason === "missingInVersionB";
   const showNearestMatchBtn = isMissing;
@@ -272,6 +331,9 @@ export function renderCodeView(container, options = {}) {
     : `${flatSorted.length} formulas · ${scopeLabel}`;
 
   const mainClass = "code-view-ide-main code-view-ide-main--entire";
+  const toolbarRightHtml = options.codeFocusToolbar
+    ? buildCodeFocusToolbarHtml(pane, options.codeFocusToolbar)
+    : "";
 
   container.innerHTML = `
     <div class="code-view code-view--ide">
@@ -280,6 +342,7 @@ export function renderCodeView(container, options = {}) {
           <span class="code-view-ide-brand">Formula code</span>
           <span class="code-view-ide-scope" title="Screen filter">${escapeHtml(scopeLabel)}</span>
         </div>
+        ${toolbarRightHtml}
       </div>
       <div class="${mainClass}">
         <div class="code-view-editor-stack">

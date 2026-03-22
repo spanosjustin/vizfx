@@ -36,6 +36,10 @@ function graphDependencySubtreeFocusEyeSvg() {
 function clearDependencyGraphSubtreeFocus() {
   state.dependencyGraphSubtreeFocus.A = false;
   state.dependencyGraphSubtreeFocus.B = false;
+  state.dependencyGraphSubtreeFocusDepth.A = null;
+  state.dependencyGraphSubtreeFocusDepth.B = null;
+  state.dependencyGraphSubtreeFocusDirection.A = "undirected";
+  state.dependencyGraphSubtreeFocusDirection.B = "undirected";
   state.codeViewRelatedOnlyFocus.A = false;
   state.codeViewRelatedOnlyFocus.B = false;
 }
@@ -647,7 +651,11 @@ function bindEvents() {
     }
 
     const codeRelatedOnlyBtn = e.target?.closest?.("[data-action='code-related-only']");
-    if (codeRelatedOnlyBtn && codeRelatedOnlyBtn.closest(".graph-screen-chips")) {
+    if (
+      codeRelatedOnlyBtn &&
+      (codeRelatedOnlyBtn.closest(".graph-screen-chips") ||
+        codeRelatedOnlyBtn.closest(".code-view-ide-toolbar"))
+    ) {
       if (state.viewMode !== "code") return;
       const version = codeRelatedOnlyBtn.dataset.version;
       if (version !== "A" && version !== "B") return;
@@ -693,6 +701,31 @@ function bindEvents() {
     if (state.viewMode === "tree") resetTreeExpansionStateForPane(version);
 
     refreshDependencyGraphScreenChips();
+    refreshGraph();
+  });
+
+  centerPanel?.addEventListener("change", (e) => {
+    const depthSel = e.target?.closest?.(".graph-subtree-focus-depth-select");
+    const dirSel = e.target?.closest?.(".graph-subtree-focus-direction-select");
+    const sel = depthSel || dirSel;
+    if (!sel) return;
+    const inGraphChips = sel.closest(".graph-screen-chips");
+    const inCodeToolbar = sel.closest(".code-view-ide-toolbar");
+    if (!inGraphChips && !inCodeToolbar) return;
+    if (inGraphChips && state.viewMode !== "graph") return;
+    if (inCodeToolbar && state.viewMode !== "code") return;
+    const version = sel.dataset.version;
+    if (version !== "A" && version !== "B") return;
+    if (sel.disabled) return;
+    if (depthSel) {
+      const raw = depthSel.value;
+      state.dependencyGraphSubtreeFocusDepth[version] =
+        raw === "" ? null : Math.max(0, parseInt(raw, 10) || 0);
+    } else {
+      const v = dirSel.value;
+      state.dependencyGraphSubtreeFocusDirection[version] =
+        v === "upstream" || v === "downstream" ? v : "undirected";
+    }
     refreshGraph();
   });
 
@@ -1032,18 +1065,6 @@ function renderScreenChipsForPane(version, container, parsed, selectedFileName) 
   if (isCodeMode) {
     const codeSelectedKey = resolveFormulaKeyForCodePaneScroll(version);
     const selectedBtnDisabled = !codeSelectedKey;
-    const relatedFocusOn = state.codeViewRelatedOnlyFocus[version];
-    html += `<button type="button" class="graph-subtree-focus-btn${
-      relatedFocusOn ? " is-active" : ""
-    }" data-version="${version}" data-action="code-related-only" aria-label="${
-      relatedFocusOn ? "Show all formulas in scope" : "Show only formulas connected to the selection"
-    }" title="${
-      relatedFocusOn
-        ? "Show all formulas in scope"
-        : "Hide formulas that are not in the same connected group as the selection (same as dependency graph eye)"
-    }" aria-pressed="${relatedFocusOn}"${
-      selectedBtnDisabled ? " disabled aria-disabled=\"true\"" : ""
-    }>${graphDependencySubtreeFocusEyeSvg()}</button>`;
     html += `<button type="button" class="graph-focus-selected-view-btn" data-version="${version}" data-action="code-scroll-selected" aria-label="Scroll to selected formula in code" title="Scroll to selected formula in code"${
       selectedBtnDisabled ? " disabled aria-disabled=\"true\"" : ""
     }>Selected</button>`;
@@ -1081,6 +1102,27 @@ function renderScreenChipsForPane(version, container, parsed, selectedFileName) 
       }" aria-pressed="${subtreeOn}"${
         eyeDisabled ? " disabled aria-disabled=\"true\"" : ""
       }>${graphDependencySubtreeFocusEyeSvg()}</button>`;
+      const depthDirDisabled = eyeDisabled || !subtreeOn;
+      const dirVal = state.dependencyGraphSubtreeFocusDirection[version] || "undirected";
+      const dirOpt = (v) => (dirVal === v ? " selected" : "");
+      html += `<select class="graph-subtree-focus-direction-select" data-version="${version}" aria-label="Subtree focus direction" title="How to walk edges (arrow is from→to in the export). Downstream = dependencies of the selection; Upstream = dependents."${depthDirDisabled ? " disabled aria-disabled=\"true\"" : ""}>`;
+      html += `<option value="undirected"${dirOpt("undirected")}>Undirected</option>`;
+      html += `<option value="upstream"${dirOpt("upstream")}>Upstream (dependents)</option>`;
+      html += `<option value="downstream"${dirOpt("downstream")}>Downstream (dependencies)</option>`;
+      html += `</select>`;
+      const depthVal = state.dependencyGraphSubtreeFocusDepth[version];
+      const depthFull =
+        depthVal == null ||
+        depthVal === Infinity ||
+        ![1, 2, 3].includes(depthVal);
+      const depthOpt = (n) =>
+        !depthFull && depthVal === n ? " selected" : "";
+      html += `<select class="graph-subtree-focus-depth-select" data-version="${version}" aria-label="Subtree focus depth" title="Limit distance from the selection (Full = unlimited). Undirected: hop count. Upstream / Downstream: directed steps along edges."${depthDirDisabled ? " disabled aria-disabled=\"true\"" : ""}>`;
+      html += `<option value=""${depthFull ? " selected" : ""}>Full</option>`;
+      html += `<option value="1"${depthOpt(1)}>1 hop</option>`;
+      html += `<option value="2"${depthOpt(2)}>2 hops</option>`;
+      html += `<option value="3"${depthOpt(3)}>3 hops</option>`;
+      html += `</select>`;
       html += `</div>`;
     }
   }
@@ -1835,7 +1877,7 @@ function refreshGraph() {
         state.dependencyGraphScreenFilterFileA,
         (nodeId) => handleNodeHover("A", nodeId),
         graphHoverIdForPane("A"),
-        { subtreeFocus: state.dependencyGraphSubtreeFocus.A }
+        graphFocusOptionsForPane("A")
       );
       applyGraphViewportTransform(graphSvgA, "A");
       // Next frame makes sure opacity transition + entrance animation both start cleanly.
@@ -1916,7 +1958,7 @@ function refreshGraph() {
         state.dependencyGraphScreenFilterFileB,
         (nodeId) => handleNodeHover("B", nodeId),
         graphHoverIdForPane("B"),
-        { subtreeFocus: state.dependencyGraphSubtreeFocus.B }
+        graphFocusOptionsForPane("B")
       );
       applyGraphViewportTransform(graphSvgB, "B");
       requestAnimationFrame(() => animateSvgIn(graphSvgB, token));
@@ -2034,8 +2076,9 @@ function resolveFormulaKeyForCodePaneScroll(version) {
 }
 
 /**
- * When Code view “related only” is on, formula keys to show: weakly connected component in the
- * dependency graph (same visibility rules as the graph), intersected with formulas in the pane’s scope.
+ * When Code view “related only” is on, formula keys to show: same subtree-focus node set as the
+ * dependency graph (filters, screen scope, depth, and direction for that pane),
+ * intersected with formulas in the pane’s scope.
  */
 function getCodeViewVisibleFormulaKeysForPane(version) {
   if (!state.codeViewRelatedOnlyFocus[version]) return null;
@@ -2051,7 +2094,9 @@ function getCodeViewVisibleFormulaKeysForPane(version) {
     parsed,
     state.filters,
     screenFilter,
-    rootId
+    rootId,
+    state.dependencyGraphSubtreeFocusDepth[version],
+    state.dependencyGraphSubtreeFocusDirection[version]
   );
   const inScope = new Set((parsedForPane?.formulas || []).map((f) => f.key));
   const out = new Set();
@@ -2201,13 +2246,24 @@ function getCodeViewOptionsForPane(version) {
       formulasByKey: Object.fromEntries(formulas.map((f) => [f.key, f])),
     };
   }
+  const codeScrollKey = parsed && parsedForPane ? resolveFormulaKeyForCodePaneScroll(version) : null;
+  const codeToolbarSelectedDisabled = !codeScrollKey;
+  const relatedFocusOn = state.codeViewRelatedOnlyFocus[version];
+  const codeToolbarDepthDirDisabled = codeToolbarSelectedDisabled || !relatedFocusOn;
   return {
     paneVersion: version,
     hasParsed: !!parsed,
     parsed: displayParsed,
-    selectedKey: parsed && parsedForPane ? resolveFormulaKeyForCodePaneScroll(version) : null,
+    selectedKey: codeScrollKey,
     visibleFormulaKeys,
     scopeLabel: getScreenScopeLabelForPane(version),
+    codeFocusToolbar: {
+      relatedFocusOn,
+      direction: state.dependencyGraphSubtreeFocusDirection[version] || "undirected",
+      depth: state.dependencyGraphSubtreeFocusDepth[version],
+      selectedBtnDisabled: codeToolbarSelectedDisabled,
+      depthDirDisabled: codeToolbarDepthDirDisabled,
+    },
     onViewNearestMatch: () => {
       // Optional matching strategy not implemented yet.
     },
@@ -2376,6 +2432,14 @@ function graphHoverIdForPane(version) {
   return version === "A" ? state.hoveredNodeIdA : state.hoveredNodeIdB;
 }
 
+function graphFocusOptionsForPane(version) {
+  return {
+    subtreeFocus: state.dependencyGraphSubtreeFocus[version],
+    subtreeFocusDepth: state.dependencyGraphSubtreeFocusDepth[version],
+    subtreeFocusDirection: state.dependencyGraphSubtreeFocusDirection[version],
+  };
+}
+
 function handleNodeHover(version, nodeId) {
   const key = version === "A" ? "hoveredNodeIdA" : "hoveredNodeIdB";
   if (state[key] === nodeId) return;
@@ -2387,22 +2451,26 @@ function handleNodeHover(version, nodeId) {
   const svg = version === "A" ? graphSvgA : graphSvgB;
   if (!svg) return;
 
-  updateGraphFocus(svg, graphHighlightIdForPane(version), nodeId, {
-    subtreeFocus: state.dependencyGraphSubtreeFocus[version],
-  });
+  updateGraphFocus(svg, graphHighlightIdForPane(version), nodeId, graphFocusOptionsForPane(version));
 }
 
 /** Keep dependency graph dim/highlight in sync when selection changes from tree / code / etc. */
 function syncGraphFocusFromSelection() {
   if (graphSvgA?.__graphIndex) {
-    updateGraphFocus(graphSvgA, graphHighlightIdForPane("A"), graphHoverIdForPane("A"), {
-      subtreeFocus: state.dependencyGraphSubtreeFocus.A,
-    });
+    updateGraphFocus(
+      graphSvgA,
+      graphHighlightIdForPane("A"),
+      graphHoverIdForPane("A"),
+      graphFocusOptionsForPane("A")
+    );
   }
   if (graphSvgB?.__graphIndex) {
-    updateGraphFocus(graphSvgB, graphHighlightIdForPane("B"), graphHoverIdForPane("B"), {
-      subtreeFocus: state.dependencyGraphSubtreeFocus.B,
-    });
+    updateGraphFocus(
+      graphSvgB,
+      graphHighlightIdForPane("B"),
+      graphHoverIdForPane("B"),
+      graphFocusOptionsForPane("B")
+    );
   }
 }
 

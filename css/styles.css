@@ -1760,7 +1760,40 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
+    margin-left: auto;
+    min-width: 0;
+  }
+
+  .code-view-ide-toolbar .graph-subtree-focus-btn {
+    flex-shrink: 0;
+  }
+
+  .code-view-ide-toolbar .graph-subtree-focus-direction-select,
+  .code-view-ide-toolbar .graph-subtree-focus-depth-select {
+    appearance: auto;
+    max-width: 7.5rem;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12px;
+    line-height: 1.2;
+    border-radius: var(--radius-outer);
+    border: 1px solid rgba(148, 163, 184, 0.26);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(226, 232, 240, 0.88);
+    cursor: pointer;
+  }
+
+  .code-view-ide-toolbar .graph-subtree-focus-direction-select {
+    max-width: 12rem;
+  }
+
+  .code-view-ide-toolbar .graph-subtree-focus-direction-select:disabled,
+  .code-view-ide-toolbar .graph-subtree-focus-depth-select:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   .code-view-ide-main {
@@ -3091,11 +3124,6 @@
     margin-left: auto; /* push right: first item in the utility button group */
   }
 
-  /* Code view: eye is left of “Selected”; margin pushes the whole [eye · Selected · Copy all] group. */
-  .graph-screen-chips .graph-subtree-focus-btn[data-action="code-related-only"] {
-    margin-left: auto;
-  }
-
   .graph-screen-chips .graph-focus-selected-view-btn[data-action="code-scroll-selected"] {
     margin-left: 0;
   }
@@ -3124,6 +3152,32 @@
 
   .graph-screen-chips .graph-subtree-focus-btn {
     pointer-events: auto;
+  }
+
+  .graph-screen-chips .graph-subtree-focus-direction-select,
+  .graph-screen-chips .graph-subtree-focus-depth-select {
+    appearance: auto;
+    max-width: 7.5rem;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12px;
+    line-height: 1.2;
+    border-radius: var(--radius-outer);
+    border: 1px solid rgba(148, 163, 184, 0.26);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(226, 232, 240, 0.88);
+    cursor: pointer;
+  }
+
+  .graph-screen-chips .graph-subtree-focus-direction-select {
+    max-width: 12rem;
+  }
+
+  .graph-screen-chips .graph-subtree-focus-direction-select:disabled,
+  .graph-screen-chips .graph-subtree-focus-depth-select:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   .graph-screen-chips .tree-expand-all-view-btn {
@@ -3383,6 +3437,13 @@
   }
 
   /* Sticky "Formula code" toolbar sits under scope row; overflow visible so sticky works vs. `.code-view--ide { overflow: hidden }`. */
+  /* Code view: the eye lived in the chips row with margin-left:auto; Selected used margin-left:0. After moving the eye to the Formula code bar, Selected should anchor the right-side group. */
+  .graph-container--code-view
+    .graph-screen-chips
+    .graph-focus-selected-view-btn[data-action="code-scroll-selected"] {
+    margin-left: auto;
+  }
+
   .graph-container--code-view .code-view.code-view--ide {
     overflow: visible;
   }
