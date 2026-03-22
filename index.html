@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Power Fx Visualizer</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header id="siteTopbar" class="topbar">
+    <div class="topbar-brand">
+      <h1>Power Fx Visualizer</h1>
+      <p class="subtitle">Documentation and code review tool for Power Apps / Power Fx</p>
+    </div>
+    <div class="topbar-tips">
+      <div class="topbar-tip-row">
+        <p class="topbar-tip" id="headerTip">
+          Pick Version A and B JSON, then use Compare Versions for Version Diff.
+        </p>
+        <div class="topbar-tip-actions" role="group" aria-label="Usage tips and help">
+          <button
+            type="button"
+            id="howItWorksBtn"
+            class="topbar-tip-nav topbar-help-btn"
+            aria-haspopup="dialog"
+            aria-controls="howItWorksDialog"
+          >
+            How it works
+          </button>
+          <button
+            type="button"
+            id="prevTipBtn"
+            class="topbar-tip-nav"
+            aria-controls="headerTip"
+            aria-label="Show previous usage tip"
+            title="Previous tip"
+          >
+            Last
+          </button>
+          <button
+            type="button"
+            id="nextTipBtn"
+            class="topbar-tip-nav"
+            aria-controls="headerTip"
+            aria-label="Show next usage tip"
+            title="Next tip"
+          >
+            Next
+          </button>
+          <button
+            type="button"
+            id="tipRotationToggleBtn"
+            class="topbar-tip-nav topbar-tip-toggle"
+            aria-controls="headerTip"
+            aria-label="Pause automatic tip rotation"
+            title="Pause"
+          >
+            <svg
+              class="topbar-tip-icon topbar-tip-icon--pause"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <rect x="4" y="3" width="3" height="10" rx="0.75" fill="currentColor" />
+              <rect x="9" y="3" width="3" height="10" rx="0.75" fill="currentColor" />
+            </svg>
+            <svg
+              class="topbar-tip-icon topbar-tip-icon--play"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M5 3.25 12.5 8 5 12.75z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="appShell" class="app-shell">
+    <aside id="leftPanel" class="left-panel">
+      <header class="left-panel-header">
+        <span class="left-panel-title">Control Panel</span>
+        <button
+          id="collapseLeftPanelBtn"
+          class="left-panel-header-btn"
+          type="button"
+          aria-expanded="true"
+          aria-controls="leftPanelBody"
+          aria-label="Collapse explorer panel"
+          title="Collapse panel"
+        >
+          <span class="left-panel-header-btn-icon left-panel-header-btn-icon--rail" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+              <path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06L7.28 12.78a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/>
+            </svg>
+          </span>
+          <span class="left-panel-header-btn-icon is-collapse" aria-hidden="true"></span>
+        </button>
+        <span class="left-panel-rail-label" aria-hidden="true">C</span>
+      </header>
+      <div id="leftPanelBody" class="left-panel-body">
+      <section class="panel-section panel-section--collapsible panel-section--titlebar" id="loadJsonSection">
+        <div class="panel-section-header">
+          <h2 class="panel-section-heading" id="loadJsonHeading">Load JSON</h2>
+          <button
+            type="button"
+            id="toggleLoadJsonBtn"
+            class="panel-section-toggle"
+            aria-expanded="true"
+            aria-controls="loadJsonBody"
+            aria-labelledby="loadJsonHeading"
+            title="Hide Load JSON"
+            aria-label="Hide Load JSON section"
+          >
+            <span class="panel-section-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="loadJsonBody" class="panel-section-body">
+          <label class="file-label">
+            Version A
+            <input type="file" id="fileA" accept=".json" />
+          </label>
+
+          <label class="file-label">
+            Version B
+            <input type="file" id="fileB" accept=".json" />
+          </label>
+
+          <div class="button-row">
+            <button id="loadSamplesBtn">Load Sample</button>
+            <button id="compareBtn">Compare Versions</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section panel-section--collapsible panel-section--titlebar" id="folderSection">
+        <div class="panel-section-header">
+          <h2 class="panel-section-heading" id="folderHeading">Folder</h2>
+          <button
+            type="button"
+            id="toggleFolderBtn"
+            class="panel-section-toggle"
+            aria-expanded="true"
+            aria-controls="folderBody"
+            aria-labelledby="folderHeading"
+            title="Hide Folder"
+            aria-label="Hide Folder section"
+          >
+            <span class="panel-section-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="folderBody" class="panel-section-body">
+          <div id="projectFilesView" class="project-files-list project-data-tree"></div>
+        </div>
+      </section>
+
+      <section class="panel-section panel-section--collapsible panel-section--titlebar" id="filtersSection">
+        <div class="panel-section-header">
+          <h2 class="panel-section-heading" id="filtersHeading">Filters</h2>
+          <button
+            type="button"
+            id="toggleFiltersBtn"
+            class="panel-section-toggle"
+            aria-expanded="true"
+            aria-controls="filtersBody"
+            aria-labelledby="filtersHeading"
+            title="Hide Filters"
+            aria-label="Hide Filters section"
+          >
+            <span class="panel-section-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="filtersBody" class="panel-section-body">
+          <div class="filter-grid">
+            <label>
+              <input type="checkbox" id="toggleApp" checked />
+              App
+            </label>
+            <label>
+              <input type="checkbox" id="toggleScreens" checked />
+              Screens
+            </label>
+            <label>
+              <input type="checkbox" id="toggleFiles" checked />
+              Files
+            </label>
+            <label>
+              <input type="checkbox" id="toggleFormulas" checked />
+              Formulas
+            </label>
+            <label>
+              <input type="checkbox" id="toggleVariables" checked />
+              Variables
+            </label>
+            <label>
+              <input type="checkbox" id="toggleTables" checked />
+              Tables
+            </label>
+            <label>
+              <input type="checkbox" id="toggleColumns" checked />
+              Columns
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section panel-section--collapsible panel-section--titlebar" id="masterFxSection">
+        <div class="panel-section-header">
+          <h2 class="panel-section-heading" id="masterFxHeading">Master FX</h2>
+          <button
+            type="button"
+            id="toggleMasterFxBtn"
+            class="panel-section-toggle"
+            aria-expanded="true"
+            aria-controls="masterFxBody"
+            aria-labelledby="masterFxHeading"
+            title="Hide Master FX"
+            aria-label="Hide Master FX section"
+          >
+            <span class="panel-section-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="masterFxBody" class="panel-section-body">
+          <input
+            type="text"
+            id="formulaSearch"
+            placeholder="Search formulas, controls, properties..."
+          />
+          <div id="masterFxList" class="scroll-list"></div>
+        </div>
+      </section>
+
+      <section class="panel-section panel-section--collapsible panel-section--titlebar" id="versionDiffSection">
+        <div class="panel-section-header">
+          <h2 class="panel-section-heading" id="versionDiffHeading">Version Diff</h2>
+          <button
+            type="button"
+            id="toggleVersionDiffBtn"
+            class="panel-section-toggle"
+            aria-expanded="true"
+            aria-controls="versionDiffBody"
+            aria-labelledby="versionDiffHeading"
+            title="Hide Version Diff"
+            aria-label="Hide Version Diff section"
+          >
+            <span class="panel-section-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="versionDiffBody" class="panel-section-body">
+          <div id="diffSummary" class="diff-summary empty-state">
+            Load two versions to compare.
+          </div>
+        </div>
+      </section>
+      </div>
+    </aside>
+
+    <section class="center-panel">
+      <button
+        id="expandLeftPanelBtn"
+        class="left-panel-expand-tag"
+        type="button"
+        aria-controls="leftPanel"
+        aria-label="Expand explorer panel"
+        title="Expand explorer panel"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <span class="left-panel-expand-tag-icon" aria-hidden="true"></span>
+      </button>
+      <div class="toolbar">
+        <div class="toolbar-row toolbar-row--titlebar">
+          <span id="appSummary" class="toolbar-status">No file loaded.</span>
+        </div>
+
+        <div class="toolbar-row toolbar-subrow">
+          <div class="version-chip-group">
+            <button id="versionAChip" class="version-path" type="button" aria-label="Show Version A graph" aria-pressed="true">
+              <span class="version-path-badge">A</span>
+              <span id="versionAPath" class="version-path-text">No file loaded.</span>
+            </button>
+            <button id="versionBChip" class="version-path" type="button" aria-label="Show Version B graph" aria-pressed="false">
+              <span class="version-path-badge secondary">B</span>
+              <span id="versionBPath" class="version-path-text">No file loaded.</span>
+            </button>
+          </div>
+          <div class="view-toggle view-toggle--centered" role="group" aria-label="Toggle dependency, tree view, logic flow, or code view">
+            <button id="viewGraphBtn" class="view-toggle-btn is-active" type="button" aria-pressed="true">Dependency</button>
+            <button id="viewTreeBtn" class="view-toggle-btn" type="button" aria-pressed="false">Tree View</button>
+            <button id="viewLogicBtn" class="view-toggle-btn" type="button" aria-pressed="false">Logic Flow</button>
+            <button id="viewCodeBtn" class="view-toggle-btn" type="button" aria-pressed="false">Code View</button>
+          </div>
+          <div class="view-mode-actions" role="group" aria-label="View and export controls">
+            <button
+              id="toggleTopbarBtn"
+              class="view-mode-btn view-mode-btn--icon"
+              type="button"
+              aria-controls="siteTopbar"
+              aria-expanded="true"
+              aria-label="Hide tips header"
+              title="Hide tips header"
+            >
+              <svg
+                class="view-mode-icon view-mode-icon--stroke topbar-toggle-chevron"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.35"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.75 10.25 8 5.75l4.25 4.5"
+                ></path>
+              </svg>
+            </button>
+            <button id="focusedViewBtn" class="view-mode-btn view-mode-btn--icon" type="button" aria-label="Focused view — hide side panels" title="Focused view — hide explorer and details panels">
+              <svg class="view-mode-icon view-mode-icon--stroke" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" d="M3.25 4.75 6.25 8l-3 3.25M12.75 4.75 9.75 8l3 3.25"></path>
+              </svg>
+            </button>
+            <button id="fullViewBtn" class="view-mode-btn view-mode-btn--icon" type="button" aria-label="Full view — show side panels" title="Full view — show explorer and details panels">
+              <svg class="view-mode-icon view-mode-icon--stroke" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M2.75 3.5v9M13.25 3.5v9"></path>
+                <path fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" d="M6.25 4.75 3.25 8l3 3.25M9.75 4.75l3.25 3.25-3.25 3.25"></path>
+              </svg>
+            </button>
+            <button id="exportViewBtn" class="view-mode-btn view-mode-btn--icon" type="button" aria-label="Export" title="Export">
+              <svg class="view-mode-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M8.75 1.5a.75.75 0 0 0-1.5 0v6.19L5.53 5.97a.75.75 0 1 0-1.06 1.06l3 3a.75.75 0 0 0 1.06 0l3-3a.75.75 0 0 0-1.06-1.06L8.75 7.69V1.5zM2 10.75A.75.75 0 0 1 2.75 10h10.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75zm1.75 2.25a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="graphPaneA" class="graph-pane is-active">
+        <div class="graph-pane-header">
+          <div class="graph-pane-title">Version A</div>
+          <div id="graphPaneAPath" class="graph-pane-path">No file loaded.</div>
+          <button
+            id="toggleLogicPaneA"
+            class="graph-pane-collapse-btn"
+            type="button"
+            aria-label="Collapse Version A pane in Logic Flow"
+            aria-expanded="true"
+            title="Collapse Version A pane"
+          >
+            <span class="graph-pane-collapse-btn__icon graph-pane-collapse-btn__icon--rail" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+                <path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06L7.28 12.78a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/>
+              </svg>
+            </span>
+            <span class="graph-pane-collapse-btn__icon graph-pane-collapse-btn__icon--swap" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+                <path d="M2.5 6h7.09L8.22 4.63l1.06-1.06L12.56 7l-3.28 3.43-1.06-1.06L9.59 7H2.5a.75.75 0 0 1 0-1.5zm11 4H6.41l1.37 1.37-1.06 1.06L3.44 9l3.28-3.43 1.06 1.06L6.41 9h7.09a.75.75 0 0 1 0 1.5z"/>
+              </svg>
+            </span>
+            <span class="graph-pane-collapse-btn__label">Hide</span>
+          </button>
+          <span class="graph-pane-rail-label" aria-hidden="true">A</span>
+        </div>
+        <div id="graphContainerA" class="graph-container">
+          <div
+            id="graphPaneAScreenChips"
+            class="graph-screen-chips"
+            role="toolbar"
+            aria-label="Screen filter and tree controls"
+            hidden
+          ></div>
+          <div id="treeSearchRowA" class="tree-search-row" role="search" hidden>
+            <input
+              type="text"
+              id="treeSearchA"
+              class="tree-search-input"
+              placeholder="Search tree (file / control / property)..."
+              aria-label="Search tree in Version A"
+              autocomplete="off"
+              aria-controls="treeContainerA"
+            />
+          </div>
+          <svg id="graphSvgA"></svg>
+          <div id="treeContainerA" class="tree-container" hidden></div>
+          <div id="logicContainerA" class="view-placeholder" hidden></div>
+          <div id="codeContainerA" class="view-placeholder" hidden></div>
+          <div id="graphEmptyA" class="graph-empty">
+            Upload a JSON file to render Version A.
+          </div>
+        </div>
+      </div>
+
+      <div id="graphPaneB" class="graph-pane">
+        <div class="graph-pane-header">
+          <div class="graph-pane-title">Version B</div>
+          <div id="graphPaneBPath" class="graph-pane-path">No file loaded.</div>
+          <button
+            id="toggleLogicPaneB"
+            class="graph-pane-collapse-btn"
+            type="button"
+            aria-label="Collapse Version B pane in Logic Flow"
+            aria-expanded="true"
+            title="Collapse Version B pane"
+          >
+            <span class="graph-pane-collapse-btn__icon graph-pane-collapse-btn__icon--rail" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+                <path d="M9.78 3.22a.75.75 0 0 0-1.06 0L4.47 7.47a.75.75 0 0 0 0 1.06l4.25 4.25a.75.75 0 0 0 1.06-1.06L6.06 8l3.72-3.72a.75.75 0 0 0 0-1.06z"/>
+              </svg>
+            </span>
+            <span class="graph-pane-collapse-btn__icon graph-pane-collapse-btn__icon--swap" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+                <path d="M2.5 6h7.09L8.22 4.63l1.06-1.06L12.56 7l-3.28 3.43-1.06-1.06L9.59 7H2.5a.75.75 0 0 1 0-1.5zm11 4H6.41l1.37 1.37-1.06 1.06L3.44 9l3.28-3.43 1.06 1.06L6.41 9h7.09a.75.75 0 0 1 0 1.5z"/>
+              </svg>
+            </span>
+            <span class="graph-pane-collapse-btn__label">Hide</span>
+          </button>
+          <span class="graph-pane-rail-label" aria-hidden="true">B</span>
+        </div>
+        <div id="graphContainerB" class="graph-container">
+          <div
+            id="graphPaneBScreenChips"
+            class="graph-screen-chips"
+            role="toolbar"
+            aria-label="Screen filter and tree controls"
+            hidden
+          ></div>
+          <div id="treeSearchRowB" class="tree-search-row" role="search" hidden>
+            <input
+              type="text"
+              id="treeSearchB"
+              class="tree-search-input"
+              placeholder="Search tree (file / control / property)..."
+              aria-label="Search tree in Version B"
+              autocomplete="off"
+              aria-controls="treeContainerB"
+            />
+          </div>
+          <svg id="graphSvgB"></svg>
+          <div id="treeContainerB" class="tree-container" hidden></div>
+          <div id="logicContainerB" class="view-placeholder" hidden></div>
+          <div id="codeContainerB" class="view-placeholder" hidden></div>
+          <div id="graphEmptyB" class="graph-empty">
+            Upload a JSON file to render Version B.
+          </div>
+        </div>
+      </div>
+      <button
+        id="expandRightPanelBtn"
+        class="right-panel-expand-tag"
+        type="button"
+        aria-controls="rightPanel"
+        aria-label="Expand inspector panel"
+        title="Expand inspector panel"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <span class="right-panel-expand-tag-icon" aria-hidden="true"></span>
+      </button>
+    </section>
+
+    <aside id="rightPanel" class="right-panel">
+      <header class="right-panel-header">
+        <button
+          id="collapseRightPanelBtn"
+          class="left-panel-header-btn is-leading"
+          type="button"
+          aria-expanded="true"
+          aria-controls="rightPanelBody"
+          aria-label="Collapse inspector panel"
+          title="Collapse panel"
+        >
+          <span class="left-panel-header-btn-icon right-panel-header-btn-icon--rail" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" focusable="false">
+              <path d="M9.78 3.22a.75.75 0 0 0-1.06 0L4.47 7.47a.75.75 0 0 0 0 1.06l4.25 4.25a.75.75 0 0 0 1.06-1.06L6.06 8l3.72-3.72a.75.75 0 0 0 0-1.06z"/>
+            </svg>
+          </span>
+          <span class="left-panel-header-btn-icon is-collapse" aria-hidden="true"></span>
+        </button>
+        <span class="right-panel-rail-label" aria-hidden="true">I</span>
+        <span class="right-panel-title">Inspector</span>
+      </header>
+      <div id="rightPanelBody" class="right-panel-body">
+        <section class="panel-section panel-section--titlebar">
+          <div class="panel-section-header">
+            <h2 class="panel-section-heading">Properties</h2>
+          </div>
+          <div class="panel-section-body">
+            <div id="detailsPanel" class="details-panel empty-state">
+              Click a node or formula to inspect details.
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <input type="file" id="projectFolderPicker" hidden multiple webkitdirectory directory tabindex="-1" />
+
+  <dialog id="addProjectPathDialog" class="path-dialog" aria-labelledby="addProjectPathTitle">
+    <form id="addProjectPathForm" class="path-dialog-form">
+      <h3 id="addProjectPathTitle" class="path-dialog-title">Add JSON path</h3>
+      <p class="path-dialog-hint">
+        Relative to this page (for example <code>datatest.json</code> or <code>sample-data/demo-v1.json</code>)
+        or a full <code>http(s)</code> URL. The file must be Power Apps export JSON with an <code>app</code> section.
+      </p>
+      <label class="path-dialog-label">
+        <span class="path-dialog-label-text">Path or URL</span>
+        <input
+          type="text"
+          id="addProjectPathInput"
+          class="path-dialog-input"
+          name="path"
+          autocomplete="off"
+          placeholder="datatest.json"
+        />
+      </label>
+      <p id="addProjectPathError" class="path-dialog-error" role="alert" hidden></p>
+      <div class="path-dialog-actions">
+        <button type="button" id="addProjectPathCancel" class="secondary">Cancel</button>
+        <button type="submit" id="addProjectPathSubmit">Add to list</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="howItWorksDialog" class="path-dialog how-it-works-dialog" aria-labelledby="howItWorksTitle">
+    <div class="path-dialog-form">
+      <h3 id="howItWorksTitle" class="path-dialog-title">How it works</h3>
+      <p class="path-dialog-hint how-it-works-intro">Get started in three steps:</p>
+      <ol class="how-it-works-steps">
+        <li>
+          Under <strong>Load JSON</strong>, pick Power Apps export JSON for Version A (and Version B if you want to compare). Use
+          <strong>Load Sample</strong> for a quick bundled demo.
+        </li>
+        <li>
+          Explore formulas with <strong>Dependency</strong>, <strong>Tree View</strong>, <strong>Logic Flow</strong>, or
+          <strong>Code View</strong>. Click a node or formula to see details in the inspector.
+        </li>
+        <li>
+          With two versions loaded, press <strong>Compare Versions</strong> and review results in <strong>Version Diff</strong>.
+        </li>
+      </ol>
+      <div class="path-dialog-actions">
+        <button type="button" id="howItWorksCloseBtn" class="secondary">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1361 @@
+{
+    "app": {
+        "name": "FieldServiceDispatch",
+        "sourceFolder": "SrcFieldService",
+        "generatedAt": "2026-03-22T11:45:00Z",
+        "versionLabel": "v2-1"
+    },
+    "files": [
+        {
+            "fileName": "App.fx",
+            "type": "app",
+            "formulas": [
+                {
+                    "control": "App",
+                    "property": "OnStart",
+                    "formula": "Set(varDispatcherEmail, User().Email); Set(varDefaultRadiusMiles, 25); Set(varPendingApprovalCount, CountRows(Filter('TicketApprovals', ApproverEmail = varDispatcherEmail && ApprovalStatus = \"Pending\")))",
+                    "references": {
+                        "variablesSet": ["varDispatcherEmail", "varDefaultRadiusMiles", "varPendingApprovalCount"],
+                        "variablesUsed": ["varDispatcherEmail"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["TicketApprovals"],
+                        "columnsUsed": ["ApproverEmail", "ApprovalStatus"],
+                        "functionsUsed": ["Set", "User", "CountRows", "Filter"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "HomeScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "HomeScreen",
+                    "property": "OnVisible",
+                    "formula": "UpdateContext({locHomeBanner: \"Dispatch\"})",
+                    "references": {
+                        "variablesSet": ["locHomeBanner"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "lbl_PendingApprovals",
+                    "property": "Text",
+                    "formula": "\"Pending approvals: \" & Text(varPendingApprovalCount)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varPendingApprovalCount"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Text"]
+                    }
+                },
+                {
+                    "control": "btn_GoTickets",
+                    "property": "OnSelect",
+                    "formula": "Navigate(TicketListScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_GoApprovals",
+                    "property": "OnSelect",
+                    "formula": "Navigate(ApprovalQueueScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_GoSettings",
+                    "property": "OnSelect",
+                    "formula": "Navigate(SettingsScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                },
+                {
+                    "control": "gal_OpenAssignments",
+                    "property": "Items",
+                    "formula": "Filter('ServiceTickets', AssignedTo = varDispatcherEmail && Status = \"InProgress\")",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varDispatcherEmail"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["AssignedTo", "Status"],
+                        "functionsUsed": ["Filter"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "TicketListScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "TicketListScreen",
+                    "property": "OnVisible",
+                    "formula": "UpdateContext({ctxStatusFilter: \"Open\", ctxSearchText: \"\"})",
+                    "references": {
+                        "variablesSet": ["ctxStatusFilter", "ctxSearchText"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "txt_SearchTickets",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxSearchText: txt_SearchTickets.Text})",
+                    "references": {
+                        "variablesSet": ["ctxSearchText"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["txt_SearchTickets"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "drp_StatusFilter",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxStatusFilter: drp_StatusFilter.Selected.Value})",
+                    "references": {
+                        "variablesSet": ["ctxStatusFilter"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["drp_StatusFilter"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "gal_Tickets",
+                    "property": "Items",
+                    "formula": "Filter(If(ctxStatusFilter = \"All\", 'ServiceTickets', Filter('ServiceTickets', Status = ctxStatusFilter)), ctxSearchText = \"\" || StartsWith(Lower(Title), Lower(ctxSearchText)))",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["ctxStatusFilter", "ctxSearchText"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["Status", "Title"],
+                        "functionsUsed": ["Filter", "If", "StartsWith", "Lower"]
+                    }
+                },
+                {
+                    "control": "gal_Tickets",
+                    "property": "OnSelect",
+                    "formula": "Set(varSelectedTicket, gal_Tickets.Selected); Navigate(TicketDetailScreen, ScreenTransition.UnCover)",
+                    "references": {
+                        "variablesSet": ["varSelectedTicket"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["gal_Tickets"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_RefreshTickets",
+                    "property": "OnSelect",
+                    "formula": "Refresh('ServiceTickets')",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Refresh"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "TicketDetailScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "lbl_TicketTitle",
+                    "property": "Text",
+                    "formula": "varSelectedTicket.Title",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": ["Title"],
+                        "functionsUsed": []
+                    }
+                },
+                {
+                    "control": "lbl_AccountName",
+                    "property": "Text",
+                    "formula": "LookUp('Customers', ID = varSelectedTicket.CustomerID, DisplayName)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["Customers"],
+                        "columnsUsed": ["ID", "DisplayName", "CustomerID"],
+                        "functionsUsed": ["LookUp"]
+                    }
+                },
+                {
+                    "control": "btn_RequestApproval",
+                    "property": "OnSelect",
+                    "formula": "Patch('TicketApprovals', Defaults('TicketApprovals'), {TicketID: varSelectedTicket.ID, TitleSnapshot: varSelectedTicket.Title, RequestedBy: varDispatcherEmail, ApproverEmail: \"lead@contoso.com\", ApprovalStatus: \"Pending\", RequestComments: txt_ApprovalReason.Text})",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket", "varDispatcherEmail"],
+                        "controlsUsed": ["txt_ApprovalReason"],
+                        "tablesUsed": ["TicketApprovals"],
+                        "columnsUsed": ["TicketID", "TitleSnapshot", "RequestedBy", "ApproverEmail", "ApprovalStatus", "RequestComments", "ID", "Title"],
+                        "functionsUsed": ["Patch", "Defaults"]
+                    }
+                },
+                {
+                    "control": "btn_SaveTicket",
+                    "property": "OnSelect",
+                    "formula": "Patch('ServiceTickets', varSelectedTicket, {Status: drp_TicketStatus.Selected.Value, Notes: txt_TicketNotes.Text})",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": ["drp_TicketStatus", "txt_TicketNotes"],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["Status", "Notes"],
+                        "functionsUsed": ["Patch"]
+                    }
+                },
+                {
+                    "control": "btn_ReturnList",
+                    "property": "OnSelect",
+                    "formula": "Navigate(TicketListScreen, ScreenTransition.Cover)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "ApprovalQueueScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "ApprovalQueueScreen",
+                    "property": "OnVisible",
+                    "formula": "Refresh('TicketApprovals'); UpdateContext({ctxQueueScope: \"Mine\"})",
+                    "references": {
+                        "variablesSet": ["ctxQueueScope"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": ["TicketApprovals"],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Refresh", "UpdateContext"]
+                    }
+                },
+                {
+                    "control": "tgl_ShowAllApprovals",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxQueueScope: If(tgl_ShowAllApprovals.Value, \"All\", \"Mine\")})",
+                    "references": {
+                        "variablesSet": ["ctxQueueScope"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["tgl_ShowAllApprovals"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext", "If"]
+                    }
+                },
+                {
+                    "control": "gal_Approvals",
+                    "property": "Items",
+                    "formula": "If(ctxQueueScope = \"All\", Filter('TicketApprovals', ApprovalStatus = \"Pending\"), Filter('TicketApprovals', ApproverEmail = varDispatcherEmail && ApprovalStatus = \"Pending\"))",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["ctxQueueScope", "varDispatcherEmail"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["TicketApprovals"],
+                        "columnsUsed": ["ApprovalStatus", "ApproverEmail"],
+                        "functionsUsed": ["If", "Filter"]
+                    }
+                },
+                {
+                    "control": "gal_Approvals",
+                    "property": "OnSelect",
+                    "formula": "Set(varSelectedApproval, gal_Approvals.Selected); Navigate(ApprovalWizardScreen, ScreenTransition.UnCover)",
+                    "references": {
+                        "variablesSet": ["varSelectedApproval"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["gal_Approvals"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_ApprovalQueueHome",
+                    "property": "OnSelect",
+                    "formula": "Navigate(HomeScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "ApprovalWizardScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "ApprovalWizardScreen",
+                    "property": "OnVisible",
+                    "formula": "UpdateContext({ctxWizardStep: 1, ctxWizardNote: \"\"})",
+                    "references": {
+                        "variablesSet": ["ctxWizardStep", "ctxWizardNote"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "lbl_WizardStepTitle",
+                    "property": "Text",
+                    "formula": "\"Step \" & Text(ctxWizardStep) & \" of 3\"",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["ctxWizardStep"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Text"]
+                    }
+                },
+                {
+                    "control": "btn_WizardBack",
+                    "property": "OnSelect",
+                    "formula": "UpdateContext({ctxWizardStep: Max(1, ctxWizardStep - 1)})",
+                    "references": {
+                        "variablesSet": ["ctxWizardStep"],
+                        "variablesUsed": ["ctxWizardStep"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext", "Max"]
+                    }
+                },
+                {
+                    "control": "btn_WizardNext",
+                    "property": "OnSelect",
+                    "formula": "UpdateContext({ctxWizardStep: If(ctxWizardStep < 3, ctxWizardStep + 1, ctxWizardStep)})",
+                    "references": {
+                        "variablesSet": ["ctxWizardStep"],
+                        "variablesUsed": ["ctxWizardStep"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext", "If"]
+                    }
+                },
+                {
+                    "control": "txt_ReviewNote",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxWizardNote: txt_ReviewNote.Text})",
+                    "references": {
+                        "variablesSet": ["ctxWizardNote"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["txt_ReviewNote"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "btn_FinalApprove",
+                    "property": "OnSelect",
+                    "formula": "Patch('TicketApprovals', varSelectedApproval, {ApprovalStatus: \"Approved\", ReviewedOn: Now(), RequestComments: txt_ReviewNote.Text}); Patch('ServiceTickets', LookUp('ServiceTickets', ID = varSelectedApproval.TicketID), {Status: \"Scheduled\"}); Set(varPendingApprovalCount, CountRows(Filter('TicketApprovals', ApproverEmail = varDispatcherEmail && ApprovalStatus = \"Pending\"))); Navigate(ApprovalQueueScreen, ScreenTransition.Cover)",
+                    "references": {
+                        "variablesSet": ["varPendingApprovalCount"],
+                        "variablesUsed": ["varSelectedApproval", "varDispatcherEmail"],
+                        "controlsUsed": ["txt_ReviewNote"],
+                        "tablesUsed": ["TicketApprovals", "ServiceTickets"],
+                        "columnsUsed": ["ApprovalStatus", "ReviewedOn", "RequestComments", "TicketID", "ID", "Status", "ApproverEmail"],
+                        "functionsUsed": ["Patch", "Now", "LookUp", "Set", "CountRows", "Filter", "Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_FinalReject",
+                    "property": "OnSelect",
+                    "formula": "Patch('TicketApprovals', varSelectedApproval, {ApprovalStatus: \"Rejected\", ReviewedOn: Now(), RequestComments: txt_ReviewNote.Text}); Set(varPendingApprovalCount, CountRows(Filter('TicketApprovals', ApproverEmail = varDispatcherEmail && ApprovalStatus = \"Pending\"))); Navigate(ApprovalQueueScreen, ScreenTransition.Cover)",
+                    "references": {
+                        "variablesSet": ["varPendingApprovalCount"],
+                        "variablesUsed": ["varSelectedApproval", "varDispatcherEmail"],
+                        "controlsUsed": ["txt_ReviewNote"],
+                        "tablesUsed": ["TicketApprovals"],
+                        "columnsUsed": ["ApprovalStatus", "ReviewedOn", "RequestComments", "ApproverEmail"],
+                        "functionsUsed": ["Patch", "Now", "Set", "CountRows", "Filter", "Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_WizardExit",
+                    "property": "OnSelect",
+                    "formula": "Navigate(ApprovalQueueScreen, ScreenTransition.Cover)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "SettingsScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "tgl_PushAlerts",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxPushAlerts: tgl_PushAlerts.Value})",
+                    "references": {
+                        "variablesSet": ["ctxPushAlerts"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["tgl_PushAlerts"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "btn_ApplyRadius",
+                    "property": "OnSelect",
+                    "formula": "Set(varDefaultRadiusMiles, Value(txt_RadiusMiles.Text))",
+                    "references": {
+                        "variablesSet": ["varDefaultRadiusMiles"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["txt_RadiusMiles"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "Value"]
+                    }
+                },
+                {
+                    "control": "lbl_RadiusSummary",
+                    "property": "Text",
+                    "formula": "\"Radius: \" & Text(varDefaultRadiusMiles) & \" mi (max \" & Text(varDefaultRadiusMiles * 2) & \")\"",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varDefaultRadiusMiles"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Text"]
+                    }
+                },
+                {
+                    "control": "btn_BackHome",
+                    "property": "OnSelect",
+                    "formula": "Navigate(HomeScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        }
+    ],
+    "variables": [
+        {
+            "name": "varDispatcherEmail",
+            "kind": "Global",
+            "file": "App.fx",
+            "scope": "app"
+        },
+        {
+            "name": "varDefaultRadiusMiles",
+            "kind": "Global",
+            "file": "App.fx",
+            "scope": "app"
+        },
+        {
+            "name": "varPendingApprovalCount",
+            "kind": "Global",
+            "file": "App.fx",
+            "scope": "app"
+        },
+        {
+            "name": "locHomeBanner",
+            "kind": "Context",
+            "file": "HomeScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxStatusFilter",
+            "kind": "Context",
+            "file": "TicketListScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxSearchText",
+            "kind": "Context",
+            "file": "TicketListScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "varSelectedTicket",
+            "kind": "Global",
+            "file": "TicketListScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxQueueScope",
+            "kind": "Context",
+            "file": "ApprovalQueueScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "varSelectedApproval",
+            "kind": "Global",
+            "file": "ApprovalQueueScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxWizardStep",
+            "kind": "Context",
+            "file": "ApprovalWizardScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxWizardNote",
+            "kind": "Context",
+            "file": "ApprovalWizardScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxPushAlerts",
+            "kind": "Context",
+            "file": "SettingsScreen.fx",
+            "scope": "screen"
+        }
+    ],
+    "dataSources": [
+        {
+            "table": "ServiceTickets",
+            "columns": ["ID", "Title", "Status", "AssignedTo", "CustomerID", "Notes"]
+        },
+        {
+            "table": "Customers",
+            "columns": ["ID", "DisplayName"]
+        },
+        {
+            "table": "TicketApprovals",
+            "columns": ["ID", "TicketID", "TitleSnapshot", "RequestedBy", "ApproverEmail", "ApprovalStatus", "RequestComments", "ReviewedOn"]
+        }
+    ],
+    "nodes": [
+        {
+            "id": "formula::App::OnStart::App.fx",
+            "label": "App.OnStart",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::varDispatcherEmail::App.fx",
+            "label": "varDispatcherEmail",
+            "nodeType": "variable"
+        },
+        {
+            "id": "var::varDefaultRadiusMiles::App.fx",
+            "label": "varDefaultRadiusMiles",
+            "nodeType": "variable"
+        },
+        {
+            "id": "var::varPendingApprovalCount::App.fx",
+            "label": "varPendingApprovalCount",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::HomeScreen::OnVisible::HomeScreen.fx",
+            "label": "HomeScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::locHomeBanner::HomeScreen.fx",
+            "label": "locHomeBanner",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::lbl_PendingApprovals::Text::HomeScreen.fx",
+            "label": "lbl_PendingApprovals.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_GoTickets::OnSelect::HomeScreen.fx",
+            "label": "btn_GoTickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_GoApprovals::OnSelect::HomeScreen.fx",
+            "label": "btn_GoApprovals.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_GoSettings::OnSelect::HomeScreen.fx",
+            "label": "btn_GoSettings.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "label": "gal_OpenAssignments.Items",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::TicketListScreen::OnVisible::TicketListScreen.fx",
+            "label": "TicketListScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxStatusFilter::TicketListScreen.fx",
+            "label": "ctxStatusFilter",
+            "nodeType": "variable"
+        },
+        {
+            "id": "var::ctxSearchText::TicketListScreen.fx",
+            "label": "ctxSearchText",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::txt_SearchTickets::OnChange::TicketListScreen.fx",
+            "label": "txt_SearchTickets.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::drp_StatusFilter::OnChange::TicketListScreen.fx",
+            "label": "drp_StatusFilter.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "label": "gal_Tickets.Items",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Tickets::OnSelect::TicketListScreen.fx",
+            "label": "gal_Tickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::varSelectedTicket::TicketListScreen.fx",
+            "label": "varSelectedTicket",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_RefreshTickets::OnSelect::TicketListScreen.fx",
+            "label": "btn_RefreshTickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "label": "lbl_TicketTitle.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "label": "lbl_AccountName.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "label": "btn_RequestApproval.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "label": "btn_SaveTicket.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_ReturnList::OnSelect::TicketDetailScreen.fx",
+            "label": "btn_ReturnList.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::ApprovalQueueScreen::OnVisible::ApprovalQueueScreen.fx",
+            "label": "ApprovalQueueScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxQueueScope::ApprovalQueueScreen.fx",
+            "label": "ctxQueueScope",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::tgl_ShowAllApprovals::OnChange::ApprovalQueueScreen.fx",
+            "label": "tgl_ShowAllApprovals.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "label": "gal_Approvals.Items",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Approvals::OnSelect::ApprovalQueueScreen.fx",
+            "label": "gal_Approvals.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::varSelectedApproval::ApprovalQueueScreen.fx",
+            "label": "varSelectedApproval",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_ApprovalQueueHome::OnSelect::ApprovalQueueScreen.fx",
+            "label": "btn_ApprovalQueueHome.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::ApprovalWizardScreen::OnVisible::ApprovalWizardScreen.fx",
+            "label": "ApprovalWizardScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "label": "ctxWizardStep",
+            "nodeType": "variable"
+        },
+        {
+            "id": "var::ctxWizardNote::ApprovalWizardScreen.fx",
+            "label": "ctxWizardNote",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::lbl_WizardStepTitle::Text::ApprovalWizardScreen.fx",
+            "label": "lbl_WizardStepTitle.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_WizardBack::OnSelect::ApprovalWizardScreen.fx",
+            "label": "btn_WizardBack.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_WizardNext::OnSelect::ApprovalWizardScreen.fx",
+            "label": "btn_WizardNext.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::txt_ReviewNote::OnChange::ApprovalWizardScreen.fx",
+            "label": "txt_ReviewNote.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "label": "btn_FinalApprove.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "label": "btn_FinalReject.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_WizardExit::OnSelect::ApprovalWizardScreen.fx",
+            "label": "btn_WizardExit.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::tgl_PushAlerts::OnChange::SettingsScreen.fx",
+            "label": "tgl_PushAlerts.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxPushAlerts::SettingsScreen.fx",
+            "label": "ctxPushAlerts",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_ApplyRadius::OnSelect::SettingsScreen.fx",
+            "label": "btn_ApplyRadius.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_RadiusSummary::Text::SettingsScreen.fx",
+            "label": "lbl_RadiusSummary.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_BackHome::OnSelect::SettingsScreen.fx",
+            "label": "btn_BackHome.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "table::ServiceTickets",
+            "label": "ServiceTickets",
+            "nodeType": "table"
+        },
+        {
+            "id": "table::Customers",
+            "label": "Customers",
+            "nodeType": "table"
+        },
+        {
+            "id": "table::TicketApprovals",
+            "label": "TicketApprovals",
+            "nodeType": "table"
+        },
+        {
+            "id": "column::ServiceTickets::AssignedTo",
+            "label": "AssignedTo",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Status",
+            "label": "Status",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Title",
+            "label": "Title",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::CustomerID",
+            "label": "CustomerID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Notes",
+            "label": "Notes",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::ID",
+            "label": "ID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::Customers::ID",
+            "label": "ID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::Customers::DisplayName",
+            "label": "DisplayName",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::TicketID",
+            "label": "TicketID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::TitleSnapshot",
+            "label": "TitleSnapshot",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::RequestedBy",
+            "label": "RequestedBy",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::ApproverEmail",
+            "label": "ApproverEmail",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::ApprovalStatus",
+            "label": "ApprovalStatus",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::RequestComments",
+            "label": "RequestComments",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::TicketApprovals::ReviewedOn",
+            "label": "ReviewedOn",
+            "nodeType": "column"
+        }
+    ],
+    "edges": [
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varPendingApprovalCount::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "column::TicketApprovals::ApproverEmail",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "column::TicketApprovals::ApprovalStatus",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::HomeScreen::OnVisible::HomeScreen.fx",
+            "to": "var::locHomeBanner::HomeScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::lbl_PendingApprovals::Text::HomeScreen.fx",
+            "to": "var::varPendingApprovalCount::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "column::ServiceTickets::AssignedTo",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::TicketListScreen::OnVisible::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::TicketListScreen::OnVisible::TicketListScreen.fx",
+            "to": "var::ctxSearchText::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::txt_SearchTickets::OnChange::TicketListScreen.fx",
+            "to": "var::ctxSearchText::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::drp_StatusFilter::OnChange::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "var::ctxSearchText::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "column::ServiceTickets::Title",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::OnSelect::TicketListScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_RefreshTickets::OnSelect::TicketListScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Title",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "table::Customers",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::Customers::ID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::Customers::DisplayName",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::CustomerID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::TicketID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::TitleSnapshot",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::RequestedBy",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::ApproverEmail",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::ApprovalStatus",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::TicketApprovals::RequestComments",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::ID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_RequestApproval::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Title",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Notes",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::ApprovalQueueScreen::OnVisible::ApprovalQueueScreen.fx",
+            "to": "var::ctxQueueScope::ApprovalQueueScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::ApprovalQueueScreen::OnVisible::ApprovalQueueScreen.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::tgl_ShowAllApprovals::OnChange::ApprovalQueueScreen.fx",
+            "to": "var::ctxQueueScope::ApprovalQueueScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "to": "var::ctxQueueScope::ApprovalQueueScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "to": "column::TicketApprovals::ApprovalStatus",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Approvals::Items::ApprovalQueueScreen.fx",
+            "to": "column::TicketApprovals::ApproverEmail",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Approvals::OnSelect::ApprovalQueueScreen.fx",
+            "to": "var::varSelectedApproval::ApprovalQueueScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::ApprovalWizardScreen::OnVisible::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::ApprovalWizardScreen::OnVisible::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardNote::ApprovalWizardScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::lbl_WizardStepTitle::Text::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_WizardBack::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_WizardBack::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_WizardNext::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_WizardNext::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardStep::ApprovalWizardScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::txt_ReviewNote::OnChange::ApprovalWizardScreen.fx",
+            "to": "var::ctxWizardNote::ApprovalWizardScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varPendingApprovalCount::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varSelectedApproval::ApprovalQueueScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ApprovalStatus",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ReviewedOn",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::RequestComments",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::TicketID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::ServiceTickets::ID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalApprove::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ApproverEmail",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varPendingApprovalCount::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varSelectedApproval::ApprovalQueueScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "table::TicketApprovals",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ApprovalStatus",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ReviewedOn",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::RequestComments",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_FinalReject::OnSelect::ApprovalWizardScreen.fx",
+            "to": "column::TicketApprovals::ApproverEmail",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::tgl_PushAlerts::OnChange::SettingsScreen.fx",
+            "to": "var::ctxPushAlerts::SettingsScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_ApplyRadius::OnSelect::SettingsScreen.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::lbl_RadiusSummary::Text::SettingsScreen.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "uses"
+        }
+    ],
+    "summary": {
+        "fileCount": 7,
+        "formulaCount": 35,
+        "variableCount": 12,
+        "tableCount": 3,
+        "columnCount": 15
+    }
+}

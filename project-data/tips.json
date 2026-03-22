@@ -1,0 +1,25 @@
+{
+  "tips": [
+    {
+      "text": "Pick Version A and Version B JSON under Load JSON, then Compare Versions to refresh the Version Diff summary."
+    },
+    {
+      "text": "Load Sample pulls bundled sample-data/demo-v1.json into Version A for a quick first look."
+    },
+    {
+      "text": "Reset clears loaded versions, selections, custom paths, and related UI so you can start over."
+    },
+    {
+      "text": "Folder lists project-data/ from manifest.json; use + to open a local folder of JSON files, or URL to add a path or web address."
+    },
+    {
+      "text": "Filters, Master FX search, and Version Diff apply across Graph, Tree, Logic Flow, and Code views—including focus/full modes and toolbar exports."
+    },
+    {
+      "text": "Try demo-v1-1.json in A and demo-v1-2.json in B for a richer side-by-side compare."
+    },
+    {
+      "text": "Opening via file:// can block fetch or modules; serve this folder with a static HTTP server for reliable loading."
+    }
+  ]
+}

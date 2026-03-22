@@ -1,0 +1,638 @@
+{
+    "app": {
+        "name": "FieldServiceDispatch",
+        "sourceFolder": "SrcFieldService",
+        "generatedAt": "2026-03-20T09:15:00Z",
+        "versionLabel": "v1-1"
+    },
+    "files": [
+        {
+            "fileName": "App.fx",
+            "type": "app",
+            "formulas": [
+                {
+                    "control": "App",
+                    "property": "OnStart",
+                    "formula": "Set(varDispatcherEmail, User().Email); Set(varDefaultRadiusMiles, 25)",
+                    "references": {
+                        "variablesSet": ["varDispatcherEmail", "varDefaultRadiusMiles"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "User"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "HomeScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "HomeScreen",
+                    "property": "OnVisible",
+                    "formula": "UpdateContext({locHomeBanner: \"Dispatch\"})",
+                    "references": {
+                        "variablesSet": ["locHomeBanner"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "btn_GoTickets",
+                    "property": "OnSelect",
+                    "formula": "Navigate(TicketListScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_GoSettings",
+                    "property": "OnSelect",
+                    "formula": "Navigate(SettingsScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                },
+                {
+                    "control": "gal_OpenAssignments",
+                    "property": "Items",
+                    "formula": "Filter('ServiceTickets', AssignedTo = varDispatcherEmail && Status = \"InProgress\")",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varDispatcherEmail"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["AssignedTo", "Status"],
+                        "functionsUsed": ["Filter"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "TicketListScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "TicketListScreen",
+                    "property": "OnVisible",
+                    "formula": "UpdateContext({ctxStatusFilter: \"Open\"})",
+                    "references": {
+                        "variablesSet": ["ctxStatusFilter"],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "drp_StatusFilter",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxStatusFilter: drp_StatusFilter.Selected.Value})",
+                    "references": {
+                        "variablesSet": ["ctxStatusFilter"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["drp_StatusFilter"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "gal_Tickets",
+                    "property": "Items",
+                    "formula": "If(ctxStatusFilter = \"All\", 'ServiceTickets', Filter('ServiceTickets', Status = ctxStatusFilter))",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["ctxStatusFilter"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["Status"],
+                        "functionsUsed": ["If", "Filter"]
+                    }
+                },
+                {
+                    "control": "gal_Tickets",
+                    "property": "OnSelect",
+                    "formula": "Set(varSelectedTicket, gal_Tickets.Selected); Navigate(TicketDetailScreen, ScreenTransition.UnCover)",
+                    "references": {
+                        "variablesSet": ["varSelectedTicket"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["gal_Tickets"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "Navigate"]
+                    }
+                },
+                {
+                    "control": "btn_RefreshTickets",
+                    "property": "OnSelect",
+                    "formula": "Refresh('ServiceTickets')",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Refresh"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "TicketDetailScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "lbl_TicketTitle",
+                    "property": "Text",
+                    "formula": "varSelectedTicket.Title",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": ["Title"],
+                        "functionsUsed": []
+                    }
+                },
+                {
+                    "control": "lbl_AccountName",
+                    "property": "Text",
+                    "formula": "LookUp('Customers', ID = varSelectedTicket.CustomerID, DisplayName)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": [],
+                        "tablesUsed": ["Customers"],
+                        "columnsUsed": ["ID", "DisplayName", "CustomerID"],
+                        "functionsUsed": ["LookUp"]
+                    }
+                },
+                {
+                    "control": "btn_SaveTicket",
+                    "property": "OnSelect",
+                    "formula": "Patch('ServiceTickets', varSelectedTicket, {Status: drp_TicketStatus.Selected.Value, Notes: txt_TicketNotes.Text})",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varSelectedTicket"],
+                        "controlsUsed": ["drp_TicketStatus", "txt_TicketNotes"],
+                        "tablesUsed": ["ServiceTickets"],
+                        "columnsUsed": ["Status", "Notes"],
+                        "functionsUsed": ["Patch"]
+                    }
+                },
+                {
+                    "control": "btn_ReturnList",
+                    "property": "OnSelect",
+                    "formula": "Navigate(TicketListScreen, ScreenTransition.Cover)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        },
+        {
+            "fileName": "SettingsScreen.fx",
+            "type": "screen",
+            "formulas": [
+                {
+                    "control": "tgl_PushAlerts",
+                    "property": "OnChange",
+                    "formula": "UpdateContext({ctxPushAlerts: tgl_PushAlerts.Value})",
+                    "references": {
+                        "variablesSet": ["ctxPushAlerts"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["tgl_PushAlerts"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["UpdateContext"]
+                    }
+                },
+                {
+                    "control": "btn_ApplyRadius",
+                    "property": "OnSelect",
+                    "formula": "Set(varDefaultRadiusMiles, Value(txt_RadiusMiles.Text))",
+                    "references": {
+                        "variablesSet": ["varDefaultRadiusMiles"],
+                        "variablesUsed": [],
+                        "controlsUsed": ["txt_RadiusMiles"],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Set", "Value"]
+                    }
+                },
+                {
+                    "control": "lbl_RadiusSummary",
+                    "property": "Text",
+                    "formula": "\"Radius: \" & Text(varDefaultRadiusMiles) & \" mi (max \" & Text(varDefaultRadiusMiles * 2) & \")\"",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": ["varDefaultRadiusMiles"],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Text"]
+                    }
+                },
+                {
+                    "control": "btn_BackHome",
+                    "property": "OnSelect",
+                    "formula": "Navigate(HomeScreen, ScreenTransition.Fade)",
+                    "references": {
+                        "variablesSet": [],
+                        "variablesUsed": [],
+                        "controlsUsed": [],
+                        "tablesUsed": [],
+                        "columnsUsed": [],
+                        "functionsUsed": ["Navigate"]
+                    }
+                }
+            ]
+        }
+    ],
+    "variables": [
+        {
+            "name": "varDispatcherEmail",
+            "kind": "Global",
+            "file": "App.fx",
+            "scope": "app"
+        },
+        {
+            "name": "varDefaultRadiusMiles",
+            "kind": "Global",
+            "file": "App.fx",
+            "scope": "app"
+        },
+        {
+            "name": "locHomeBanner",
+            "kind": "Context",
+            "file": "HomeScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxStatusFilter",
+            "kind": "Context",
+            "file": "TicketListScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "varSelectedTicket",
+            "kind": "Global",
+            "file": "TicketListScreen.fx",
+            "scope": "screen"
+        },
+        {
+            "name": "ctxPushAlerts",
+            "kind": "Context",
+            "file": "SettingsScreen.fx",
+            "scope": "screen"
+        }
+    ],
+    "dataSources": [
+        {
+            "table": "ServiceTickets",
+            "columns": ["ID", "Title", "Status", "AssignedTo", "CustomerID", "Notes"]
+        },
+        {
+            "table": "Customers",
+            "columns": ["ID", "DisplayName"]
+        }
+    ],
+    "nodes": [
+        {
+            "id": "formula::App::OnStart::App.fx",
+            "label": "App.OnStart",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::varDispatcherEmail::App.fx",
+            "label": "varDispatcherEmail",
+            "nodeType": "variable"
+        },
+        {
+            "id": "var::varDefaultRadiusMiles::App.fx",
+            "label": "varDefaultRadiusMiles",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::HomeScreen::OnVisible::HomeScreen.fx",
+            "label": "HomeScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::locHomeBanner::HomeScreen.fx",
+            "label": "locHomeBanner",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_GoTickets::OnSelect::HomeScreen.fx",
+            "label": "btn_GoTickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_GoSettings::OnSelect::HomeScreen.fx",
+            "label": "btn_GoSettings.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "label": "gal_OpenAssignments.Items",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::TicketListScreen::OnVisible::TicketListScreen.fx",
+            "label": "TicketListScreen.OnVisible",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxStatusFilter::TicketListScreen.fx",
+            "label": "ctxStatusFilter",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::drp_StatusFilter::OnChange::TicketListScreen.fx",
+            "label": "drp_StatusFilter.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "label": "gal_Tickets.Items",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::gal_Tickets::OnSelect::TicketListScreen.fx",
+            "label": "gal_Tickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::varSelectedTicket::TicketListScreen.fx",
+            "label": "varSelectedTicket",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_RefreshTickets::OnSelect::TicketListScreen.fx",
+            "label": "btn_RefreshTickets.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "label": "lbl_TicketTitle.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "label": "lbl_AccountName.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "label": "btn_SaveTicket.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_ReturnList::OnSelect::TicketDetailScreen.fx",
+            "label": "btn_ReturnList.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::tgl_PushAlerts::OnChange::SettingsScreen.fx",
+            "label": "tgl_PushAlerts.OnChange",
+            "nodeType": "formula"
+        },
+        {
+            "id": "var::ctxPushAlerts::SettingsScreen.fx",
+            "label": "ctxPushAlerts",
+            "nodeType": "variable"
+        },
+        {
+            "id": "formula::btn_ApplyRadius::OnSelect::SettingsScreen.fx",
+            "label": "btn_ApplyRadius.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::lbl_RadiusSummary::Text::SettingsScreen.fx",
+            "label": "lbl_RadiusSummary.Text",
+            "nodeType": "formula"
+        },
+        {
+            "id": "formula::btn_BackHome::OnSelect::SettingsScreen.fx",
+            "label": "btn_BackHome.OnSelect",
+            "nodeType": "formula"
+        },
+        {
+            "id": "table::ServiceTickets",
+            "label": "ServiceTickets",
+            "nodeType": "table"
+        },
+        {
+            "id": "table::Customers",
+            "label": "Customers",
+            "nodeType": "table"
+        },
+        {
+            "id": "column::ServiceTickets::AssignedTo",
+            "label": "AssignedTo",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Status",
+            "label": "Status",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Title",
+            "label": "Title",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::CustomerID",
+            "label": "CustomerID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::ServiceTickets::Notes",
+            "label": "Notes",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::Customers::ID",
+            "label": "ID",
+            "nodeType": "column"
+        },
+        {
+            "id": "column::Customers::DisplayName",
+            "label": "DisplayName",
+            "nodeType": "column"
+        }
+    ],
+    "edges": [
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::App::OnStart::App.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::HomeScreen::OnVisible::HomeScreen.fx",
+            "to": "var::locHomeBanner::HomeScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "var::varDispatcherEmail::App.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "column::ServiceTickets::AssignedTo",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_OpenAssignments::Items::HomeScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::TicketListScreen::OnVisible::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::drp_StatusFilter::OnChange::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "var::ctxStatusFilter::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::Items::TicketListScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::gal_Tickets::OnSelect::TicketListScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_RefreshTickets::OnSelect::TicketListScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_TicketTitle::Text::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Title",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "table::Customers",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::Customers::ID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::Customers::DisplayName",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::lbl_AccountName::Text::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::CustomerID",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "var::varSelectedTicket::TicketListScreen.fx",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "table::ServiceTickets",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Status",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::btn_SaveTicket::OnSelect::TicketDetailScreen.fx",
+            "to": "column::ServiceTickets::Notes",
+            "relation": "uses"
+        },
+        {
+            "from": "formula::tgl_PushAlerts::OnChange::SettingsScreen.fx",
+            "to": "var::ctxPushAlerts::SettingsScreen.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::btn_ApplyRadius::OnSelect::SettingsScreen.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "sets"
+        },
+        {
+            "from": "formula::lbl_RadiusSummary::Text::SettingsScreen.fx",
+            "to": "var::varDefaultRadiusMiles::App.fx",
+            "relation": "uses"
+        }
+    ],
+    "summary": {
+        "fileCount": 5,
+        "formulaCount": 18,
+        "variableCount": 6,
+        "tableCount": 2,
+        "columnCount": 7
+    }
+}

@@ -1,0 +1,136 @@
+{
+    "app": {
+    "name": "InventoryApp",
+    "sourceFolder": "SrcInventory",
+    "generatedAt": "2026-03-18T14:00:00Z",
+    "versionLabel": "v3-form-search"
+    },
+    "files": [
+    {
+    "fileName": "App.fx",
+    "type": "app",
+    "formulas": [
+    {
+    "control": "App",
+    "property": "OnStart",
+    "formula": "Set(varUserEmail, User().Email); Set(varLowStockThreshold, 5)",
+    "references": {
+    "variablesSet": ["varUserEmail", "varLowStockThreshold"],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["Set", "User"]
+    }
+    }
+    ]
+    },
+    {
+    "fileName": "InventoryScreen.fx",
+    "type": "screen",
+    "formulas": [
+    {
+    "control": "InventoryScreen",
+    "property": "OnVisible",
+    "formula": "UpdateContext({showLowStockOnly:false})",
+    "references": {
+    "variablesSet": ["showLowStockOnly"],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["UpdateContext"]
+    }
+    },
+    {
+    "control": "gal_Inventory",
+    "property": "Items",
+    "formula": "Filter('Inventory', (IsBlank(txt_Search.Text) || StartsWith(Name, txt_Search.Text)) && (showLowStockOnly = false || Quantity <= varLowStockThreshold))",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": ["showLowStockOnly", "varLowStockThreshold"],
+    "controlsUsed": ["txt_Search"],
+    "tablesUsed": ["Inventory"],
+    "columnsUsed": ["Name", "Quantity"],
+    "functionsUsed": ["Filter", "IsBlank", "StartsWith"]
+    }
+    },
+    {
+    "control": "btn_Edit",
+    "property": "OnSelect",
+    "formula": "EditForm(frm_Inventory)",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": [],
+    "controlsUsed": ["frm_Inventory"],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["EditForm"]
+    }
+    },
+    {
+    "control": "btn_Save",
+    "property": "OnSelect",
+    "formula": "SubmitForm(frm_Inventory)",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": [],
+    "controlsUsed": ["frm_Inventory"],
+    "tablesUsed": ["Inventory"],
+    "columnsUsed": [],
+    "functionsUsed": ["SubmitForm"]
+    }
+    }
+    ]
+    }
+    ],
+    "variables": [
+    {
+    "name": "varUserEmail",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "varLowStockThreshold",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "showLowStockOnly",
+    "kind": "Context",
+    "file": "InventoryScreen.fx",
+    "scope": "screen"
+    }
+    ],
+    "dataSources": [
+    {
+    "table": "Inventory",
+    "columns": ["ID", "Name", "Quantity"]
+    }
+    ],
+    "nodes": [
+    { "id": "formula::App::OnStart::App.fx", "label": "App.OnStart", "nodeType": "formula" },
+    { "id": "formula::gal_Inventory::Items::InventoryScreen.fx", "label": "gal_Inventory.Items", "nodeType": "formula" },
+    { "id": "formula::btn_Edit::OnSelect::InventoryScreen.fx", "label": "btn_Edit.OnSelect", "nodeType": "formula" },
+    { "id": "formula::btn_Save::OnSelect::InventoryScreen.fx", "label": "btn_Save.OnSelect", "nodeType": "formula" },
+    { "id": "table::Inventory", "label": "Inventory", "nodeType": "table" },
+    { "id": "column::Inventory::Name", "label": "Name", "nodeType": "column" },
+    { "id": "column::Inventory::Quantity", "label": "Quantity", "nodeType": "column" }
+    ],
+    "edges": [
+    { "from": "formula::gal_Inventory::Items::InventoryScreen.fx", "to": "table::Inventory", "relation": "uses" },
+    { "from": "formula::gal_Inventory::Items::InventoryScreen.fx", "to": "column::Inventory::Name", "relation": "uses" },
+    { "from": "formula::gal_Inventory::Items::InventoryScreen.fx", "to": "column::Inventory::Quantity", "relation": "uses" },
+    { "from": "formula::btn_Save::OnSelect::InventoryScreen.fx", "to": "table::Inventory", "relation": "uses" }
+    ],
+    "summary": {
+    "fileCount": 2,
+    "formulaCount": 4,
+    "variableCount": 3,
+    "tableCount": 1,
+    "columnCount": 2
+    }
+    }
+    

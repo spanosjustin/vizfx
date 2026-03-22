@@ -1,0 +1,224 @@
+{
+    "app": {
+    "name": "InventoryApp",
+    "sourceFolder": "SrcInventory",
+    "generatedAt": "2026-03-18T12:00:00Z",
+    "versionLabel": "v1"
+    },
+    "files": [
+    {
+    "fileName": "App.fx",
+    "type": "app",
+    "formulas": [
+    {
+    "control": "App",
+    "property": "OnStart",
+    "formula": "Set(varUserEmail, User().Email); Set(varLowStockThreshold, 5)",
+    "references": {
+    "variablesSet": ["varUserEmail", "varLowStockThreshold"],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["Set", "User"]
+    }
+    }
+    ]
+    },
+    {
+    "fileName": "InventoryScreen.fx",
+    "type": "screen",
+    "formulas": [
+    {
+    "control": "InventoryScreen",
+    "property": "OnVisible",
+    "formula": "UpdateContext({showLowStockOnly:false})",
+    "references": {
+    "variablesSet": ["showLowStockOnly"],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["UpdateContext"]
+    }
+    },
+    {
+    "control": "tgl_LowStock",
+    "property": "OnChange",
+    "formula": "UpdateContext({showLowStockOnly: tgl_LowStock.Value})",
+    "references": {
+    "variablesSet": ["showLowStockOnly"],
+    "variablesUsed": [],
+    "controlsUsed": ["tgl_LowStock"],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["UpdateContext"]
+    }
+    },
+    {
+    "control": "gal_Inventory",
+    "property": "Items",
+    "formula": "If(showLowStockOnly, Filter('Inventory', Quantity <= varLowStockThreshold), 'Inventory')",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": ["showLowStockOnly", "varLowStockThreshold"],
+    "controlsUsed": [],
+    "tablesUsed": ["Inventory"],
+    "columnsUsed": ["Quantity"],
+    "functionsUsed": ["If", "Filter"]
+    }
+    },
+    {
+    "control": "gal_Inventory",
+    "property": "OnSelect",
+    "formula": "Set(varSelectedItem, gal_Inventory.Selected)",
+    "references": {
+    "variablesSet": ["varSelectedItem"],
+    "variablesUsed": [],
+    "controlsUsed": ["gal_Inventory"],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["Set"]
+    }
+    },
+    {
+    "control": "btn_UpdateQty",
+    "property": "OnSelect",
+    "formula": "Patch('Inventory', varSelectedItem, {Quantity: Value(txt_QtyInput.Text)})",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": ["varSelectedItem"],
+    "controlsUsed": ["txt_QtyInput"],
+    "tablesUsed": ["Inventory"],
+    "columnsUsed": ["Quantity"],
+    "functionsUsed": ["Patch", "Value"]
+    }
+    }
+    ]
+    }
+    ],
+    "variables": [
+    {
+    "name": "varUserEmail",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "varLowStockThreshold",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "varSelectedItem",
+    "kind": "Global",
+    "file": "InventoryScreen.fx",
+    "scope": "screen"
+    },
+    {
+    "name": "showLowStockOnly",
+    "kind": "Context",
+    "file": "InventoryScreen.fx",
+    "scope": "screen"
+    }
+    ],
+    "dataSources": [
+    {
+    "table": "Inventory",
+    "columns": ["ID", "Name", "Quantity"]
+    }
+    ],
+    "nodes": [
+    {
+    "id": "formula::App::OnStart::App.fx",
+    "label": "App.OnStart",
+    "nodeType": "formula"
+    },
+    {
+    "id": "var::varLowStockThreshold::App.fx",
+    "label": "varLowStockThreshold",
+    "nodeType": "variable"
+    },
+    {
+    "id": "formula::InventoryScreen::OnVisible::InventoryScreen.fx",
+    "label": "InventoryScreen.OnVisible",
+    "nodeType": "formula"
+    },
+    {
+    "id": "var::showLowStockOnly::InventoryScreen.fx",
+    "label": "showLowStockOnly",
+    "nodeType": "variable"
+    },
+    {
+    "id": "formula::gal_Inventory::Items::InventoryScreen.fx",
+    "label": "gal_Inventory.Items",
+    "nodeType": "formula"
+    },
+    {
+    "id": "formula::gal_Inventory::OnSelect::InventoryScreen.fx",
+    "label": "gal_Inventory.OnSelect",
+    "nodeType": "formula"
+    },
+    {
+    "id": "var::varSelectedItem::InventoryScreen.fx",
+    "label": "varSelectedItem",
+    "nodeType": "variable"
+    },
+    {
+    "id": "formula::btn_UpdateQty::OnSelect::InventoryScreen.fx",
+    "label": "btn_UpdateQty.OnSelect",
+    "nodeType": "formula"
+    },
+    {
+    "id": "table::Inventory",
+    "label": "Inventory",
+    "nodeType": "table"
+    },
+    {
+    "id": "column::Inventory::Quantity",
+    "label": "Quantity",
+    "nodeType": "column"
+    }
+    ],
+    "edges": [
+    {
+    "from": "formula::App::OnStart::App.fx",
+    "to": "var::varLowStockThreshold::App.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::InventoryScreen::OnVisible::InventoryScreen.fx",
+    "to": "var::showLowStockOnly::InventoryScreen.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::gal_Inventory::Items::InventoryScreen.fx",
+    "to": "table::Inventory",
+    "relation": "uses"
+    },
+    {
+    "from": "formula::gal_Inventory::Items::InventoryScreen.fx",
+    "to": "column::Inventory::Quantity",
+    "relation": "uses"
+    },
+    {
+    "from": "formula::gal_Inventory::OnSelect::InventoryScreen.fx",
+    "to": "var::varSelectedItem::InventoryScreen.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::btn_UpdateQty::OnSelect::InventoryScreen.fx",
+    "to": "table::Inventory",
+    "relation": "uses"
+    }
+    ],
+    "summary": {
+    "fileCount": 2,
+    "formulaCount": 5,
+    "variableCount": 4,
+    "tableCount": 1,
+    "columnCount": 1
+    }
+    }
+    

@@ -1,0 +1,190 @@
+{
+    "app": {
+    "name": "DemoTest",
+    "sourceFolder": "SrcSupeona",
+    "generatedAt": "2026-03-17T12:00:00Z",
+    "versionLabel": "v1"
+    },
+    "files": [
+    {
+    "fileName": "App.fx",
+    "type": "app",
+    "formulas": [
+    {
+    "control": "App",
+    "property": "OnStart",
+    "formula": "Set(varTheme, AppTheme); Set(varStep, 1); ClearCollect(colSteps, [\"Step 1\", \"Step 2\"])",
+    "references": {
+    "variablesSet": ["varTheme", "varStep", "colSteps"],
+    "variablesUsed": ["AppTheme"],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["Set", "ClearCollect"]
+    }
+    }
+    ]
+    },
+    {
+    "fileName": "ExistingSubpoenaScreen.fx",
+    "type": "screen",
+    "formulas": [
+    {
+    "control": "ExistingSubpoenaScreen",
+    "property": "OnVisible",
+    "formula": "Set(varShowFilter, false); Set(varSelectedItem, Blank())",
+    "references": {
+    "variablesSet": ["varShowFilter", "varSelectedItem"],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["Set", "Blank"]
+    }
+    },
+    {
+    "control": "btn_OpenPopup",
+    "property": "OnSelect",
+    "formula": "UpdateContext({showPopup:true}); Set(varSelectedSubpoena, gal_ExistingSubpoenaTable.Selected)",
+    "references": {
+    "variablesSet": ["showPopup", "varSelectedSubpoena"],
+    "variablesUsed": [],
+    "controlsUsed": ["gal_ExistingSubpoenaTable"],
+    "tablesUsed": [],
+    "columnsUsed": [],
+    "functionsUsed": ["UpdateContext", "Set"]
+    }
+    },
+    {
+    "control": "gal_ExistingSubpoenaTable",
+    "property": "Items",
+    "formula": "Filter('Subpoena Intake Tracker', ID > 0)",
+    "references": {
+    "variablesSet": [],
+    "variablesUsed": [],
+    "controlsUsed": [],
+    "tablesUsed": ["Subpoena Intake Tracker"],
+    "columnsUsed": ["ID"],
+    "functionsUsed": ["Filter"]
+    }
+    }
+    ]
+    }
+    ],
+    "variables": [
+    {
+    "name": "colSteps",
+    "kind": "Collection",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "AppTheme",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "varStep",
+    "kind": "Global",
+    "file": "App.fx",
+    "scope": "app"
+    },
+    {
+    "name": "varShowFilter",
+    "kind": "Global",
+    "file": "ExistingSubpoenaScreen.fx",
+    "scope": "screen"
+    },
+    {
+    "name": "showPopup",
+    "kind": "Context",
+    "file": "ExistingSubpoenaScreen.fx",
+    "scope": "screen"
+    }
+    ],
+    "dataSources": [
+    {
+    "table": "Subpoena Intake Tracker",
+    "columns": ["ID"]
+    }
+    ],
+    "nodes": [
+    {
+    "id": "file::App.fx",
+    "label": "App.fx",
+    "nodeType": "file"
+    },
+    {
+    "id": "formula::App::OnStart::App.fx",
+    "label": "App.OnStart",
+    "nodeType": "formula"
+    },
+    {
+    "id": "var::varStep::App.fx",
+    "label": "varStep",
+    "nodeType": "variable",
+    "variableKind": "Global"
+    },
+    {
+    "id": "formula::btn_OpenPopup::OnSelect::ExistingSubpoenaScreen.fx",
+    "label": "btn_OpenPopup.OnSelect",
+    "nodeType": "formula"
+    },
+    {
+    "id": "var::showPopup::ExistingSubpoenaScreen.fx",
+    "label": "showPopup",
+    "nodeType": "variable",
+    "variableKind": "Context"
+    },
+    {
+    "id": "table::Subpoena Intake Tracker",
+    "label": "Subpoena Intake Tracker",
+    "nodeType": "table"
+    },
+    {
+    "id": "column::Subpoena Intake Tracker::ID",
+    "label": "ID",
+    "nodeType": "column"
+    }
+    ],
+    "edges": [
+    {
+    "from": "formula::App::OnStart::App.fx",
+    "to": "var::varStep::App.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::App::OnStart::App.fx",
+    "to": "var::colSteps::App.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::btn_OpenPopup::OnSelect::ExistingSubpoenaScreen.fx",
+    "to": "var::showPopup::ExistingSubpoenaScreen.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::btn_OpenPopup::OnSelect::ExistingSubpoenaScreen.fx",
+    "to": "var::varSelectedSubpoena::ExistingSubpoenaScreen.fx",
+    "relation": "sets"
+    },
+    {
+    "from": "formula::gal_ExistingSubpoenaTable::Items::ExistingSubpoenaScreen.fx",
+    "to": "table::Subpoena Intake Tracker",
+    "relation": "uses"
+    },
+    {
+    "from": "formula::gal_ExistingSubpoenaTable::Items::ExistingSubpoenaScreen.fx",
+    "to": "column::Subpoena Intake Tracker::ID",
+    "relation": "uses"
+    }
+    ],
+    "summary": {
+    "fileCount": 2,
+    "formulaCount": 4,
+    "variableCount": 5,
+    "tableCount": 1,
+    "columnCount": 1
+    }
+    }

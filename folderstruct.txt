@@ -1,0 +1,20 @@
+powerfx-visualizer/
+│
+├── index.html
+├── README.md
+│
+├── css/
+│   └── styles.css
+│
+├── js/
+│   ├── app.js
+│   ├── state.js
+│   ├── parser.js
+│   ├── renderer.js
+│   ├── details.js
+│   ├── diff.js
+│   └── utils.js
+│
+└── sample-data/
+    ├── demo-v1.json
+    └── demo-v2.json
