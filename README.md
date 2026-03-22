@@ -1,4 +1,4 @@
-# Power Fx Visualizer
+# Power Fx Visualizer (vizfx)
 
 **Documentation and code review tool for Power Apps / Power Fx** — inspect, navigate, and compare exported Power Apps JSON (developers, reviewers, or solution owners working from app exports).
 
@@ -22,6 +22,7 @@
 
 - **Version A / B** chips — choose which version’s content drives single-pane behaviors (graph focus, exports, etc.).
 - **Views** — **Dependency** (interactive SVG graph), **Tree View**, **Logic Flow**, **Code View**. Filters and selection apply across modes where relevant.
+- **Tree View** — each pane has a **search** box to filter the visible tree (shown when Tree View is active).
 - **Toolbar** — hide/show the **tips** header, **Focused view** (hide side panels), **Full view** (show panels), **Export** (depends on active view; see [Exports](#exports) below).
 
 ### Dependency graph
@@ -42,11 +43,12 @@
 
 ### Header tips
 
+- **How it works** — opens a short onboarding dialog (load JSON → explore views → compare versions).
 - Rotating usage tips from [`project-data/tips.json`](project-data/tips.json). **Last** / **Next** navigate; the control beside them **pauses** or **resumes** auto-rotation.
 
 ## Run locally
 
-The app loads [`js/app.js`](js/app.js) as an ES module and uses `fetch()` for samples, project data, and tips.
+The app loads [`js/app.js`](js/app.js) as an ES module and uses `fetch()` for samples, project data, and tips. Use a current desktop browser with JavaScript enabled.
 
 1. **Opening `index.html` directly** — Some browsers block ES modules or `fetch` from `file://`, so loading may be incomplete. Prefer a local server.
 
