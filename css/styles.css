@@ -3091,6 +3091,15 @@
     margin-left: auto; /* push right: first item in the utility button group */
   }
 
+  /* Code view: eye is left of “Selected”; margin pushes the whole [eye · Selected · Copy all] group. */
+  .graph-screen-chips .graph-subtree-focus-btn[data-action="code-related-only"] {
+    margin-left: auto;
+  }
+
+  .graph-screen-chips .graph-focus-selected-view-btn[data-action="code-scroll-selected"] {
+    margin-left: 0;
+  }
+
   .graph-screen-chips .graph-fit-view-btn {
     pointer-events: auto;
   }

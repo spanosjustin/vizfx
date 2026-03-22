@@ -1,7 +1,7 @@
 import { state } from "./state.js";
 import { readJsonFile, escapeHtml, formulaKey } from "./utils.js";
 import { listScreens, listAppFiles, parsePowerAppJson } from "./parser.js";
-import { renderGraph, updateGraphFocus } from "./renderer.js";
+import { renderGraph, updateGraphFocus, formulaKeysWeaklyConnectedInVisibleGraph } from "./renderer.js";
 import {
   downloadSvgElementAsFile,
   renderLogicFlow,
@@ -36,6 +36,8 @@ function graphDependencySubtreeFocusEyeSvg() {
 function clearDependencyGraphSubtreeFocus() {
   state.dependencyGraphSubtreeFocus.A = false;
   state.dependencyGraphSubtreeFocus.B = false;
+  state.codeViewRelatedOnlyFocus.A = false;
+  state.codeViewRelatedOnlyFocus.B = false;
 }
 
 const fileAInput = document.getElementById("fileA");
@@ -598,7 +600,8 @@ function bindEvents() {
       const screenFilter =
         version === "B" ? state.dependencyGraphScreenFilterFileB : state.dependencyGraphScreenFilterFileA;
       const parsedForPane = parsed ? filterParsedForScreen(parsed, screenFilter) : null;
-      const text = getCodeViewCopyAllText(parsedForPane);
+      const keysFilter = getCodeViewVisibleFormulaKeysForPane(version);
+      const text = getCodeViewCopyAllText(parsedForPane, keysFilter);
       if (!text) return;
       (async () => {
         try {
@@ -643,8 +646,21 @@ function bindEvents() {
       return;
     }
 
+    const codeRelatedOnlyBtn = e.target?.closest?.("[data-action='code-related-only']");
+    if (codeRelatedOnlyBtn && codeRelatedOnlyBtn.closest(".graph-screen-chips")) {
+      if (state.viewMode !== "code") return;
+      const version = codeRelatedOnlyBtn.dataset.version;
+      if (version !== "A" && version !== "B") return;
+      if (codeRelatedOnlyBtn.disabled) return;
+      state.codeViewRelatedOnlyFocus[version] = !state.codeViewRelatedOnlyFocus[version];
+      refreshDependencyGraphScreenChips();
+      refreshGraph();
+      return;
+    }
+
     const subtreeFocusBtn = e.target?.closest?.(".graph-subtree-focus-btn");
     if (subtreeFocusBtn && subtreeFocusBtn.closest(".graph-screen-chips")) {
+      if (state.viewMode !== "graph") return;
       const version = subtreeFocusBtn.dataset.version;
       if (version !== "A" && version !== "B") return;
       if (subtreeFocusBtn.disabled) return;
@@ -1016,6 +1032,18 @@ function renderScreenChipsForPane(version, container, parsed, selectedFileName) 
   if (isCodeMode) {
     const codeSelectedKey = resolveFormulaKeyForCodePaneScroll(version);
     const selectedBtnDisabled = !codeSelectedKey;
+    const relatedFocusOn = state.codeViewRelatedOnlyFocus[version];
+    html += `<button type="button" class="graph-subtree-focus-btn" data-version="${version}" data-action="code-related-only"${
+      relatedFocusOn ? " is-active" : ""
+    } aria-label="${
+      relatedFocusOn ? "Show all formulas in scope" : "Show only formulas connected to the selection"
+    }" title="${
+      relatedFocusOn
+        ? "Show all formulas in scope"
+        : "Hide formulas that are not in the same connected group as the selection (same as dependency graph eye)"
+    }" aria-pressed="${relatedFocusOn}"${
+      selectedBtnDisabled ? " disabled aria-disabled=\"true\"" : ""
+    }>${graphDependencySubtreeFocusEyeSvg()}</button>`;
     html += `<button type="button" class="graph-focus-selected-view-btn" data-version="${version}" data-action="code-scroll-selected" aria-label="Scroll to selected formula in code" title="Scroll to selected formula in code"${
       selectedBtnDisabled ? " disabled aria-disabled=\"true\"" : ""
     }>Selected</button>`;
@@ -1581,7 +1609,8 @@ function exportCodeForVersion(version, stamp) {
   const screenFilter =
     version === "B" ? state.dependencyGraphScreenFilterFileB : state.dependencyGraphScreenFilterFileA;
   const parsedForPane = filterParsedForScreen(parsed, screenFilter);
-  const text = getCodeViewCopyAllText(parsedForPane);
+  const keysFilter = getCodeViewVisibleFormulaKeysForPane(version);
+  const text = getCodeViewCopyAllText(parsedForPane, keysFilter);
   if (!text) {
     alert("No formulas to export in Code view.");
     return;
@@ -2004,6 +2033,37 @@ function resolveFormulaKeyForCodePaneScroll(version) {
   return selectedFormulaKeyForCodePane(version) || fallbackFormulaKeyForCodePane(version);
 }
 
+/**
+ * When Code view “related only” is on, formula keys to show: weakly connected component in the
+ * dependency graph (same visibility rules as the graph), intersected with formulas in the pane’s scope.
+ */
+function getCodeViewVisibleFormulaKeysForPane(version) {
+  if (!state.codeViewRelatedOnlyFocus[version]) return null;
+  const parsed = getParsedForVersion(version);
+  if (!parsed) return null;
+  const screenFilter =
+    version === "B" ? state.dependencyGraphScreenFilterFileB : state.dependencyGraphScreenFilterFileA;
+  const parsedForPane = filterParsedForScreen(parsed, screenFilter);
+  const rootId = graphNodeIdFromSelectedItem(state.selectedNode);
+  if (state.activeGraphVersion !== version || !rootId) return null;
+
+  const connectedKeys = formulaKeysWeaklyConnectedInVisibleGraph(
+    parsed,
+    state.filters,
+    screenFilter,
+    rootId
+  );
+  const inScope = new Set((parsedForPane?.formulas || []).map((f) => f.key));
+  const out = new Set();
+  for (const k of connectedKeys) {
+    if (inScope.has(k)) out.add(k);
+  }
+  const sel = resolveFormulaKeyForCodePaneScroll(version);
+  if (sel && inScope.has(sel)) out.add(sel);
+
+  return out.size ? out : null;
+}
+
 function openAncestorDetailsUpTo(el, boundary) {
   let n = el;
   while (n && n !== boundary) {
@@ -2131,16 +2191,22 @@ function getCodeViewOptionsForPane(version) {
   const screenFilter =
     version === "B" ? state.dependencyGraphScreenFilterFileB : state.dependencyGraphScreenFilterFileA;
   const parsedForPane = parsed ? filterParsedForScreen(parsed, screenFilter) : null;
-  const flatSorted = [...(parsedForPane?.formulas || [])].sort((a, b) => {
-    const fa = `${a.fileName || ""}|${a.control || ""}|${a.property || ""}`;
-    const fb = `${b.fileName || ""}|${b.control || ""}|${b.property || ""}`;
-    return fa.localeCompare(fb);
-  });
+  const visibleFormulaKeys = getCodeViewVisibleFormulaKeysForPane(version);
+  let displayParsed = parsedForPane;
+  if (parsedForPane?.formulas?.length && visibleFormulaKeys?.size) {
+    const formulas = parsedForPane.formulas.filter((f) => visibleFormulaKeys.has(f.key));
+    displayParsed = {
+      ...parsedForPane,
+      formulas,
+      formulasByKey: Object.fromEntries(formulas.map((f) => [f.key, f])),
+    };
+  }
   return {
     paneVersion: version,
     hasParsed: !!parsed,
-    parsed: parsedForPane,
+    parsed: displayParsed,
     selectedKey: parsed && parsedForPane ? resolveFormulaKeyForCodePaneScroll(version) : null,
+    visibleFormulaKeys,
     scopeLabel: getScreenScopeLabelForPane(version),
     onViewNearestMatch: () => {
       // Optional matching strategy not implemented yet.

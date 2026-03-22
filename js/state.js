@@ -67,6 +67,15 @@ export const state = {
     },
 
     /**
+     * Code view: when true, show only formulas in the selected item’s dependency-graph
+     * connected component (within the same visible subgraph as the graph view).
+     */
+    codeViewRelatedOnlyFocus: {
+      A: false,
+      B: false,
+    },
+
+    /**
      * Dependency graph view viewport state (Zoom/Pan) per pane.
      * Stored in app state so it survives `refreshGraph()` re-renders.
      */

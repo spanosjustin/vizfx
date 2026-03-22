@@ -202,6 +202,94 @@ function computeWeaklyConnectedNodeIdsFromEdgeElements(edgeEls, rootId) {
   return out;
 }
 
+/**
+ * Weakly connected component of `rootNodeId` over edges visible in the dependency graph
+ * (same filters + optional screen scope as `renderGraph`). Returns formula `key` values for
+ * formula nodes in that component.
+ */
+export function formulaKeysWeaklyConnectedInVisibleGraph(
+  parsed,
+  filters,
+  screenFileName,
+  rootNodeId
+) {
+  if (!parsed?.nodes?.length || !rootNodeId) return new Set();
+
+  const formulaTypeByNodeId = buildFormulaTypeByNodeId(parsed);
+  const screenNodeIds = screenFileName
+    ? buildScreenSubgraphNodeIds(parsed, screenFileName)
+    : null;
+
+  const visibleNodes = parsed.nodes.filter(
+    (node) =>
+      isNodeVisible(node, filters, formulaTypeByNodeId) &&
+      (!screenNodeIds || screenNodeIds.has(node.id))
+  );
+  const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
+
+  const visibleEdges = parsed.edges.filter(
+    (edge) => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)
+  );
+
+  if (!visibleNodeIds.has(rootNodeId)) {
+    const fk = formulaKeyForFormulaNodeId(parsed, rootNodeId);
+    return fk ? new Set([fk]) : new Set();
+  }
+
+  const connectedIds = computeWeaklyConnectedFromParsedEdges(visibleEdges, rootNodeId);
+
+  const keys = new Set();
+  for (const node of visibleNodes) {
+    if (node.nodeType === "formula" && connectedIds.has(node.id)) {
+      const match = parsed.formulas.find((formula) => {
+        const expectedId = `formula::${formula.control}::${formula.property}::${formula.fileName}`;
+        return expectedId === node.id;
+      });
+      if (match?.key) keys.add(match.key);
+    }
+  }
+  return keys;
+}
+
+function computeWeaklyConnectedFromParsedEdges(edges, rootId) {
+  if (!rootId) return new Set();
+
+  const adj = new Map();
+  for (const e of edges) {
+    const from = e.from;
+    const to = e.to;
+    if (!from || !to) continue;
+    let a = adj.get(from);
+    if (!a) adj.set(from, (a = []));
+    a.push(to);
+    let b = adj.get(to);
+    if (!b) adj.set(to, (b = []));
+    b.push(from);
+  }
+
+  const out = new Set([rootId]);
+  const stack = [rootId];
+  while (stack.length) {
+    const n = stack.pop();
+    for (const t of adj.get(n) || []) {
+      if (!out.has(t)) {
+        out.add(t);
+        stack.push(t);
+      }
+    }
+  }
+  return out;
+}
+
+function formulaKeyForFormulaNodeId(parsed, rootNodeId) {
+  if (!parsed?.formulas) return null;
+  const match = parsed.formulas.find((formula) => {
+    const expectedId = `formula::${formula.control}::${formula.property}::${formula.fileName}`;
+    return expectedId === rootNodeId;
+  });
+  return match?.key || null;
+}
+
 function buildFormulaTypeByNodeId(parsed) {
   const map = new Map();
 

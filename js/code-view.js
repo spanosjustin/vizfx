@@ -266,7 +266,10 @@ export function renderCodeView(container, options = {}) {
 
   const scopeLabel = options.scopeLabel || "All screens";
   const docTitle = scopeLabel === "All screens" ? "All" : scopeLabel;
-  const docMeta = `${flatSorted.length} formulas · ${scopeLabel}`;
+  const connectedOnly = Boolean(options.visibleFormulaKeys && options.visibleFormulaKeys.size);
+  const docMeta = connectedOnly
+    ? `${flatSorted.length} formulas (connected) · ${scopeLabel}`
+    : `${flatSorted.length} formulas · ${scopeLabel}`;
 
   const mainClass = "code-view-ide-main code-view-ide-main--entire";
 
@@ -348,10 +351,16 @@ function flashCopyBlockBtn(btn) {
 /**
  * Full Code View buffer for the current scope (matches the fold-tree body).
  * @param {{ formulas?: object[] } | null | undefined} parsedForPane
+ * @param {Set<string> | null | undefined} [visibleFormulaKeys] — when set, only these keys are included
  */
-export function getCodeViewCopyAllText(parsedForPane) {
+export function getCodeViewCopyAllText(parsedForPane, visibleFormulaKeys = null) {
   if (!parsedForPane?.formulas?.length) return "";
-  const flatSorted = [...parsedForPane.formulas].sort((a, b) => {
+  let formulas = parsedForPane.formulas;
+  if (visibleFormulaKeys && visibleFormulaKeys.size > 0) {
+    formulas = formulas.filter((f) => visibleFormulaKeys.has(f.key));
+  }
+  if (!formulas.length) return "";
+  const flatSorted = [...formulas].sort((a, b) => {
     const fa = `${a.fileName || ""}|${a.control || ""}|${a.property || ""}`;
     const fb = `${b.fileName || ""}|${b.control || ""}|${b.property || ""}`;
     return fa.localeCompare(fb);
